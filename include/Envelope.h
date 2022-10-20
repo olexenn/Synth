@@ -14,26 +14,32 @@ class Envelope {
 public:
     Envelope();
     
-    void noteOn(float fTime);
+    void noteOn(float time);
     
-    void noteOff(float fTime);
+    void noteOff(float time);
     
-    float getAmplitude(float fTime);
+    float getAmplitude(float time);
     
-    float getTriggerOnTime();
+    void draw();
     
-    float getTriggerOffTime();
+    void reset();
     
-    static float m_fAttackTime;
-    static float m_fDecayTime;
-    static float m_fSustainAmplitude;
-    static float m_fReleaseTime;
+    bool isNoteOff();
+    
+    float getCurrentAmplitude();
+    
 private:
-    float m_fStartAmplitude;
-    float m_fTriggerOnTime;
-    float m_fTriggerOffTime;
+    float m_startAmplitude;
+    float m_triggerOnTime;
+    float m_triggerOffTime;
+    float m_attackTime;
+    float m_decayTime;
+    float m_sustainAmplitude;
+    float m_releaseTime;
+    float m_actualSustainAmplitude;
+    float m_currentAmplitude;
     
-    bool m_bNoteOn;
+    bool m_noteOn;
 };
 
 #endif /* Envelope_h */

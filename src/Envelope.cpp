@@ -4,63 +4,99 @@
 //
 //  Created by Алексей Дудник on 18.10.2022.
 //
+#include <imgui.h>
+#include <imgui-knobs.h>
 
 #include "Envelope.h"
 
-float Envelope::m_fAttackTime = 0.1f;
-float Envelope::m_fDecayTime = 0.01f;
-float Envelope::m_fSustainAmplitude = 0.8f;
-float Envelope::m_fReleaseTime = 0.2f;
-
 Envelope::Envelope() :
-m_fStartAmplitude(1.0f),
-m_fTriggerOnTime(0.0f),
-m_fTriggerOffTime(0.0f),
-m_bNoteOn(false)
+m_attackTime(0.1f),
+m_decayTime(0.01f),
+m_sustainAmplitude(0.8f),
+m_releaseTime(0.2f),
+m_startAmplitude(1.0f),
+m_triggerOnTime(0.0f),
+m_triggerOffTime(0.0f),
+m_actualSustainAmplitude(0.0f),
+m_currentAmplitude(0.0f),
+m_noteOn(false)
 {}
 
-void Envelope::noteOn(float fTime)
+void Envelope::noteOn(float time)
 {
-    m_fTriggerOnTime = fTime;
-    m_bNoteOn = true;
+    m_actualSustainAmplitude = 0.0f;
+    m_triggerOnTime = time;
+    m_noteOn = true;
 }
 
 void Envelope::noteOff(float fTime)
 {
-    m_fTriggerOffTime = fTime;
-    m_bNoteOn = false;
+    m_triggerOffTime = fTime;
+    m_noteOn = false;
 }
 
-float Envelope::getAmplitude(float fTime)
+float Envelope::getAmplitude(float time)
 {
-    float fAmplitude = 0.0f;
-    float fLifeTime = fTime - m_fTriggerOnTime;
-
-    if (m_bNoteOn) {
-        if (fLifeTime <= m_fAttackTime)
-            fAmplitude = (fLifeTime / m_fAttackTime) * m_fStartAmplitude;
-
-        if (fLifeTime > m_fAttackTime && fLifeTime <= (m_fAttackTime + m_fDecayTime))
-            fAmplitude = ((fLifeTime - m_fAttackTime) / m_fDecayTime) * (m_fSustainAmplitude - m_fStartAmplitude) + m_fStartAmplitude;
-
-        if (fLifeTime > (m_fAttackTime + m_fDecayTime))
-            fAmplitude = m_fSustainAmplitude;
+    float amplitude = 0.0f;
+    float lifeTime = 0.0f;
+    
+    if (m_noteOn) {
+        lifeTime = time - m_triggerOnTime;
+        
+        if (lifeTime <= m_attackTime)
+            amplitude = (lifeTime / m_attackTime) * m_startAmplitude;
+        
+        if (lifeTime > m_attackTime && lifeTime <= (m_attackTime + m_decayTime))
+            amplitude = ((lifeTime - m_attackTime) / m_decayTime) * (m_sustainAmplitude - m_startAmplitude) + m_startAmplitude;
+        
+        if (lifeTime > (m_attackTime + m_decayTime))
+            amplitude = m_sustainAmplitude;
+        
+        m_actualSustainAmplitude = amplitude;
     } else {
-        fAmplitude = ((fTime - m_fTriggerOffTime) / m_fReleaseTime) * (0.0f - m_fSustainAmplitude) + m_fSustainAmplitude;
+        lifeTime = time - m_triggerOffTime;
+        
+        amplitude = ((lifeTime / m_releaseTime) * (0.0f - m_actualSustainAmplitude) + m_actualSustainAmplitude);
     }
     
-    if (fAmplitude <= 0.0001)
-        fAmplitude = 0.0;
+    if (amplitude <= 0.0001f)
+        amplitude = 0.0f;
     
-    return fAmplitude;
+    m_currentAmplitude = amplitude;
+    
+    return amplitude;
 }
 
-float Envelope::getTriggerOnTime()
+void Envelope::reset()
 {
-    return m_fTriggerOnTime;
+    m_noteOn = false;
+    m_currentAmplitude = 0.0f;
+    m_triggerOnTime = 0.0f;
+    m_triggerOffTime = 0.0f;
 }
 
-float Envelope::getTriggerOffTime()
+bool Envelope::isNoteOff()
 {
-    return m_fTriggerOffTime;
+    return (!m_noteOn);
+}
+
+float Envelope::getCurrentAmplitude()
+{
+    return m_currentAmplitude;
+}
+
+
+void Envelope::draw()
+{
+    ImGui::Begin("ADSR");
+    
+    ImGuiKnobs::Knob("Attack", &m_attackTime, 0.00000001f, 1.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("Decay", &m_decayTime, 0.0f, 1.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("Sustain", &m_sustainAmplitude, 0.00000001f, 1.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("Release", &m_releaseTime, 0.00000001f, 2.0f);
+    
+    ImGui::End();
 }

@@ -10,9 +10,7 @@
 
 #include "Audio.h"
 
-const int g_kNumSeconds = 5;
 const int g_kSampleRate = 44100;
-const int g_kFramesPerBuffer = 64;
 const float g_kTimeStep = 1.0 / g_kSampleRate;
 
 Audio::Audio() : m_stream(0), m_phase(0), m_fFrequency(0.0f), m_fTime(0.0f)
@@ -97,24 +95,17 @@ bool Audio::stop()
 
 void Audio::noteOn(int key)
 {
-    calculateFrequency(key);
-    m_adsr.noteOn(m_fTime);
+    synth.noteOn(key, m_fTime);
 }
 
-void Audio::noteOff()
+void Audio::noteOff(int key)
 {
-    m_fFrequency = 0.0f;
-    m_adsr.noteOff(m_fTime);
+    synth.noteOff(key, m_fTime);
 }
 
-float Audio::getTriggerOn()
+int Audio::getCounter()
 {
-    return m_adsr.getTriggerOnTime();
-}
-
-float Audio::getTriggerOff()
-{
-    return m_adsr.getTriggerOffTime();
+    return synth.getCounter();
 }
 
 int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags)
@@ -126,12 +117,7 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-//        float fOutput = std::sinf(m_fFrequency * 2.0 * M_PI * m_fTime);
-        float fAmplitude = m_adsr.getAmplitude(m_fTime);
-        
-        float fOutput = fAmplitude * std::sinf(m_fFrequency * 2.0 * M_PI * m_fTime);
-        
-        *out++ = 0.5 * fOutput;
+        *out++ = 0.5 * synth.getSample(m_fTime);
         m_fTime += g_kTimeStep;
     }
     
@@ -143,20 +129,12 @@ void Audio::paStreamFinishedMethod()
     std::cout << "Stream Completed" << std::endl;
 }
 
-// https://pages.mtu.edu/~suits/NoteFreqCalcs.html
-void Audio::calculateFrequency(int key)
-{
-    float a = 1.05946309435;
-    float hz = std::pow(a, static_cast<float>(key) - 48); // A3 note number
-    m_fFrequency = 220.0 * hz; // A3 note frequency
-}
-
 float Audio::getTime()
 {
     return m_fTime;
 }
 
-float Audio::getFrequency()
+void Audio::draw()
 {
-    return m_fFrequency;
+    synth.draw();
 }

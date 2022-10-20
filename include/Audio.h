@@ -13,12 +13,36 @@
 #include <portaudio.h>
 
 #include "Envelope.h"
+#include "Synth.h"
 
 const int g_kTableSize = 200;
 
-// Init audio and synth staff
-// TODO: Break it in 2 separate classes: Audio && Synth
+// low-level audio staff
 class Audio {
+public:
+    Audio();
+    
+    ~Audio();
+    
+    int getCounter();
+    
+    bool open(PaDeviceIndex index);
+    
+    bool close();
+    
+    bool start();
+    
+    bool stop();
+    
+    float getTime();
+    
+    void noteOn(int key);
+    
+    void noteOff(int key);
+    
+    void draw();
+    
+private:
     PaStream *m_stream;
     std::array<double, g_kTableSize> m_signal;
     int m_phase;
@@ -26,6 +50,7 @@ class Audio {
     float m_fTime;
     std::string m_message;
     Envelope m_adsr;
+    Synth synth;
     
     void calculateFrequency(int key);
     
@@ -49,33 +74,6 @@ class Audio {
     {
         return ((Audio*)userData)->paStreamFinishedMethod();
     }
-    
-
-    
-public:
-    Audio();
-    
-    ~Audio();
-    
-    bool open(PaDeviceIndex index);
-    
-    bool close();
-    
-    bool start();
-    
-    bool stop();
-    
-    float getTime();
-    
-    float getFrequency();
-    
-    void noteOn(int key);
-    
-    void noteOff();
-    
-    float getTriggerOn();
-    float getTriggerOff();
-    
 };
 
 #endif /* Audio_h */

@@ -24,9 +24,6 @@
 #define M_PI  (3.14159265)
 #endif
 
-// TODO: Refactor Code
-// TODO: Add polyphony
-
 std::map<ImGuiKey, int> keyCodeMap {
     { ImGuiKey_Z, 39 },
     { ImGuiKey_S, 40 },
@@ -101,11 +98,8 @@ int main(void) {
     
     style.ScaleAllSizes(highDPIScaleFactor);
     
-    bool showWindow = true;
-    bool showAnotherWindow = false;
     ImVec4 clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     
-    const ImGuiKey key_first = (ImGuiKey)ImGuiKey_NamedKey_BEGIN;
     
     // Audio Init
     Audio audio;
@@ -113,8 +107,6 @@ int main(void) {
     audio.open(Pa_GetDefaultOutputDevice());
     
     Keyboard keyboard;
-    
-    int currentKey = -1;
     
     audio.start();
     
@@ -129,33 +121,20 @@ int main(void) {
         // key events
         for (const auto &keyCode : keyCodeMap) {
             if (ImGui::IsKeyDown(keyCode.first)) {
-                if (currentKey != keyCode.second) {
-                    audio.noteOn(keyCode.second);
-                    keyboard.keyDown(keyCode.second, 1);
-                    currentKey = keyCode.second;
-                }
+                audio.noteOn(keyCode.second);
+                keyboard.keyDown(keyCode.second, 1);
             }
             else if (ImGui::IsKeyReleased(keyCode.first)) {
-                currentKey = -1;
-                audio.noteOff();
+                audio.noteOff(keyCode.second);
                 keyboard.keyUp(keyCode.second);
             }
         }
         
+        // keyboard ui
         keyboard.draw();
         
-        // adsr ui module
-        ImGui::Begin("ADSR");
-
-        ImGuiKnobs::Knob("Attack", &Envelope::m_fAttackTime, 0.0f, 1.0f);
-        ImGui::SameLine();
-        ImGuiKnobs::Knob("Decay", &Envelope::m_fDecayTime, 0.0f, 1.0f);
-        ImGui::SameLine();
-        ImGuiKnobs::Knob("Sustain", &Envelope::m_fSustainAmplitude, 0.0f, 1.0f);
-        ImGui::SameLine();
-        ImGuiKnobs::Knob("Release", &Envelope::m_fReleaseTime, 0.0f, 2.0f);
-
-        ImGui::End();
+        // adsr ui
+        audio.draw();
         
         // debug info
         ImGui::Begin("Debug");
@@ -163,15 +142,15 @@ int main(void) {
         auto currentNotes = keyboard.getKeys();
 
         ImGui::Text("Playing notes: ");
+        
         for (const auto &note : currentNotes) {
             ImGui::SameLine();
             ImGui::Text("%d", note);
         }
 
         ImGui::Text("Time: %f", audio.getTime());
-        ImGui::Text("TriggerOnTime: %f", audio.getTriggerOn());
-        ImGui::Text("TriggerOffTime: %f", audio.getTriggerOff());
-        ImGui::Text("Frequency: %f", audio.getFrequency());
+        
+        ImGui::Text("Polyphony counter: %d", audio.getCounter());
 
         ImGui::End();
         
