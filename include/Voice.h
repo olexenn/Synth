@@ -16,8 +16,11 @@
 class Voice
 {
 public:
-    Voice(Envelope *adsrEnvelope);
+//    Voice(Envelope *adsrEnvelope);
+    Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime);
+    
     float getSample(float time);
+    
     bool isActive();
     
     void noteOn(int key, float time);
@@ -34,7 +37,7 @@ private:
     float m_timeOn;
     float m_timeOff;
     bool m_active;
-    Envelope *m_adsrEnvelope;
+    Envelope m_adsrEnvelope;
     
 };
 

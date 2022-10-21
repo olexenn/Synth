@@ -9,21 +9,28 @@
 
 #include "Voice.h"
 
-Voice::Voice(Envelope *adsrEnvelope)
+#ifndef M_PI
+#define M_PI  (3.14159265)
+#endif
+
+Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime)
 : m_frequency(0.f)
 , m_timeOn(0.f)
 , m_timeOff(0.f)
 , m_active(false)
-, m_adsrEnvelope(adsrEnvelope)
 {
+    m_adsrEnvelope.m_attackTime = attackTime;
+    m_adsrEnvelope.m_decayTime = decayTime;
+    m_adsrEnvelope.m_sustainAmplitude = sustainAmplitude;
+    m_adsrEnvelope.m_releaseTime = releaseTime;
 }
 
 float Voice::getSample(float time)
 {
-    float amplitude = m_adsrEnvelope->getAmplitude(time);
+    float amplitude = m_adsrEnvelope.getAmplitude(time);
     float sample = amplitude * std::sinf(M_PI * 2 * m_frequency * time);
     
-    if (m_adsrEnvelope->isNoteOff() && m_adsrEnvelope->getCurrentAmplitude() == 0.0f)
+    if (m_adsrEnvelope.isNoteOff() && m_adsrEnvelope.getCurrentAmplitude() == 0.0f)
         m_active = false;
     return sample;
 }
@@ -37,13 +44,12 @@ void Voice::noteOn(int key, float time)
 {
     m_active = true;
     m_frequency = calculateFrequency(key);
-    m_adsrEnvelope->noteOn(time);
+    m_adsrEnvelope.noteOn(time);
 }
 
 void Voice::noteOff(float time)
 {
-//    m_frequency = 0.0f;
-    m_adsrEnvelope->noteOff(time);
+    m_adsrEnvelope.noteOff(time);
 }
 
 float Voice::getFrequency()
@@ -53,9 +59,7 @@ float Voice::getFrequency()
 
 void Voice::reset()
 {
-//    m_frequency = 0.0f;
-//    m_active = false;
-    m_adsrEnvelope->reset();
+    m_adsrEnvelope.reset();
 }
 
 // https://pages.mtu.edu/~suits/NoteFreqCalcs.html

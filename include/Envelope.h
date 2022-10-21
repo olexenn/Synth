@@ -9,10 +9,9 @@
 #define Envelope_h
 
 // ADSR Envelope
-// TODO: Better parameters manipulation
 class Envelope {
 public:
-    Envelope();
+    Envelope() = default;
     
     void noteOn(float time);
     
@@ -20,26 +19,24 @@ public:
     
     float getAmplitude(float time);
     
-    void draw();
-    
     void reset();
     
     bool isNoteOff();
     
     float getCurrentAmplitude();
     
+    float* m_attackTime;
+    float* m_decayTime;
+    float* m_sustainAmplitude;
+    float* m_releaseTime;
 private:
-    float m_startAmplitude;
-    float m_triggerOnTime;
-    float m_triggerOffTime;
-    float m_attackTime;
-    float m_decayTime;
-    float m_sustainAmplitude;
-    float m_releaseTime;
-    float m_actualSustainAmplitude;
-    float m_currentAmplitude;
+    float m_startAmplitude = 1.0f;
+    float m_triggerOnTime = 0.0f;
+    float m_triggerOffTime = 0.0f;
+    float m_actualSustainAmplitude = 0.0f;
+    float m_currentAmplitude = 0.0f;
     
-    bool m_noteOn;
+    bool m_noteOn = false;
 };
 
 #endif /* Envelope_h */

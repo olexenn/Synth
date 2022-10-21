@@ -13,7 +13,7 @@
 const int g_kSampleRate = 44100;
 const float g_kTimeStep = 1.0 / g_kSampleRate;
 
-Audio::Audio() : m_stream(0), m_phase(0), m_fFrequency(0.0f), m_fTime(0.0f)
+Audio::Audio() : m_stream(0), m_fFrequency(0.0f), m_fTime(0.0f)
 {
     PaError err = Pa_Initialize();
     if (err != paNoError) {

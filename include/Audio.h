@@ -15,8 +15,6 @@
 #include "Envelope.h"
 #include "Synth.h"
 
-const int g_kTableSize = 200;
-
 // low-level audio staff
 class Audio {
 public:
@@ -44,13 +42,10 @@ public:
     
 private:
     PaStream *m_stream;
-    std::array<double, g_kTableSize> m_signal;
-    int m_phase;
+    Synth synth;
     float m_fFrequency;
     float m_fTime;
     std::string m_message;
-    Envelope m_adsr;
-    Synth synth;
     
     void calculateFrequency(int key);
     

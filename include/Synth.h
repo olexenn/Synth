@@ -32,6 +32,11 @@ public:
   
 private:
     int m_polyphonyCounter;
+    float m_attackTime;
+    float m_decayTime;
+    float m_sustainAmplitude;
+    float m_releaseTime ;
+    
     std::array<Voice*, NumberOfVoices> m_voices;
     Envelope m_adsrEnvelope;
     

@@ -9,17 +9,21 @@
 #include <iostream>
 #include <algorithm>
 
+#include <imgui.h>
+#include <imgui-knobs.h>
+
 #include "Synth.h"
 
-// TODO: Fix Polyphony
-
 Synth::Synth()
+: m_attackTime(0.1f)
+, m_decayTime(0.01f)
+, m_sustainAmplitude(0.8f)
+, m_releaseTime(0.2f)
+, m_polyphonyCounter(0)
 {
-    m_polyphonyCounter = 0;
-    
     for (int i = 0; i < NumberOfVoices; i++) {
         Envelope *pAdsrEnvelope = &m_adsrEnvelope;
-        Voice* voice = new Voice(pAdsrEnvelope);
+        Voice *voice = new Voice(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime);
         m_voices[i] = voice;
     }
     
@@ -41,7 +45,6 @@ void Synth::noteOn(int key, float time)
     Voice *voice = findFreeVoice(key);
     
     if (voice) {
-//        std::cout << "Note" << std::endl;
         m_polyphonyCounter++;
         voice->reset();
         voice->noteOn(key, time);
@@ -59,11 +62,6 @@ void Synth::noteOff(int key, float time)
         }
 }
 
-void Synth::draw()
-{
-    m_adsrEnvelope.draw();
-}
-    
 int Synth::getCounter()
 {
     return m_polyphonyCounter;
@@ -90,4 +88,19 @@ Voice* Synth::findFreeVoice(int key)
     }
     
     return freeVoice;
+}
+
+void Synth::draw()
+{
+    ImGui::Begin("ADSR");
+    
+    ImGuiKnobs::Knob("Attack", &m_attackTime, 0.00000001f, 1.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("Decay", &m_decayTime, 0.0f, 1.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("Sustain", &m_sustainAmplitude, 0.00000001f, 1.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("Release", &m_releaseTime, 0.00000001f, 2.0f);
+    
+    ImGui::End();
 }

@@ -20,10 +20,6 @@
 #include "Keyboard.h"
 #include "Audio.h"
 
-#ifndef M_PI
-#define M_PI  (3.14159265)
-#endif
-
 std::map<ImGuiKey, int> keyCodeMap {
     { ImGuiKey_Z, 39 },
     { ImGuiKey_S, 40 },
