@@ -29,20 +29,23 @@ public:
     int getCounter();
     
     void draw();
+    
+    std::vector<float> getFrequencies();
   
 private:
     int m_polyphonyCounter;
     float m_attackTime;
     float m_decayTime;
     float m_sustainAmplitude;
-    float m_releaseTime ;
+    float m_releaseTime;
+    float m_gain;
     
     std::array<Voice*, NumberOfVoices> m_voices;
     Envelope m_adsrEnvelope;
     
-    Voice* findFreeVoice(int key);
+    WaveType m_type;
     
-    void removeVoice(Voice *voice);
+    Voice* findFreeVoice(int key);
     
 };
 

@@ -114,14 +114,20 @@ int main(void) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         
+//        ImGui::ShowDemoWindow();
+        
         // key events
+//        ImGui::Text("Pressed keys: ");
         for (const auto &keyCode : keyCodeMap) {
+//            ImGui::Text("%d", keyCode.first);
             if (ImGui::IsKeyDown(keyCode.first)) {
-                audio.noteOn(keyCode.second);
+//                ImGui::SameLine();
+//                ImGui::Text("%d", keyCode.first);
+//                audio.noteOn(keyCode.second);
                 keyboard.keyDown(keyCode.second, 1);
             }
             else if (ImGui::IsKeyReleased(keyCode.first)) {
-                audio.noteOff(keyCode.second);
+//                audio.noteOff(keyCode.second);
                 keyboard.keyUp(keyCode.second);
             }
         }
@@ -130,25 +136,37 @@ int main(void) {
         keyboard.draw();
         
         // adsr ui
-        audio.draw();
+//        audio.draw();
         
         // debug info
-        ImGui::Begin("Debug");
-
-        auto currentNotes = keyboard.getKeys();
-
-        ImGui::Text("Playing notes: ");
+//        ImGui::Begin("Debug");
+//
+//        auto currentNotes = keyboard.getKeys();
+//
+//        ImGui::Text("Playing notes: ");
+//
+//        for (const auto &note : currentNotes) {
+//            ImGui::SameLine();
+//            ImGui::Text("%d", note);
+//        }
+//
+//        ImGui::Text("Playing frequencies: ");
+//
+//        auto currentFrequencies = audio.getFrequencies();
+//
+//        for (const auto &freq : currentFrequencies) {
+//            ImGui::SameLine();
+//            ImGui::Text("%f", freq);
+//        }
+//
+//        ImGui::Text("Time: %f", audio.getTime());
+//
+//        ImGui::Text("Polyphony counter: %d", audio.getCounter());
+//
+//        ImGui::End();
         
-        for (const auto &note : currentNotes) {
-            ImGui::SameLine();
-            ImGui::Text("%d", note);
-        }
-
-        ImGui::Text("Time: %f", audio.getTime());
         
-        ImGui::Text("Polyphony counter: %d", audio.getCounter());
-
-        ImGui::End();
+//        ImGui::ShowDemoWindow();
         
         // Rendering
         ImGui::Render();

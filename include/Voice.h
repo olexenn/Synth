@@ -12,6 +12,14 @@
 
 #include "Envelope.h"
 
+enum WaveType
+{
+    SINE,
+    SQUARE,
+    TRIANGLE,
+    SAW,
+};
+
 // Single note sound
 class Voice
 {
@@ -19,7 +27,7 @@ public:
 //    Voice(Envelope *adsrEnvelope);
     Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime);
     
-    float getSample(float time);
+    float getSample(float time, WaveType *type);
     
     bool isActive();
     

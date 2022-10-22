@@ -25,13 +25,38 @@ Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float
     m_adsrEnvelope.m_releaseTime = releaseTime;
 }
 
-float Voice::getSample(float time)
+float Voice::getSample(float time, WaveType *type)
 {
     float amplitude = m_adsrEnvelope.getAmplitude(time);
-    float sample = amplitude * std::sinf(M_PI * 2 * m_frequency * time);
+    float sample = 0.0;
+    switch (*type) {
+        case SINE:
+            sample = std::sin(M_PI * 2 * m_frequency * time);
+            break;
+        case SQUARE:
+            sample = std::sin(2 * M_PI * m_frequency * time) > 0 ? 1.0 : -1.0;
+            break;
+        case SAW:
+        {
+            float output = 0.0f;
+            
+            for (float n = 1.0f; n < 40.0f; n++) {
+                output += (std::sin(n * 2 * M_PI * m_frequency * time)) / n;
+            }
+            sample = output * (2.0f / M_PI);
+            break;
+        }
+        case TRIANGLE:
+            sample = std::asin(std::sin(2 * M_PI * m_frequency * time) * (2.0 / M_PI));
+            break;
+        default:
+            sample = 0.0;
+    }
+//    float sample = amplitude * std::sinf(M_PI * 2 * m_frequency * time);
     
     if (m_adsrEnvelope.isNoteOff() && m_adsrEnvelope.getCurrentAmplitude() == 0.0f)
         m_active = false;
+    return amplitude * sample;
     return sample;
 }
 

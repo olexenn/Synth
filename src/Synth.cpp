@@ -20,6 +20,8 @@ Synth::Synth()
 , m_sustainAmplitude(0.8f)
 , m_releaseTime(0.2f)
 , m_polyphonyCounter(0)
+, m_type(SINE)
+, m_gain(0.5f)
 {
     for (int i = 0; i < NumberOfVoices; i++) {
         Envelope *pAdsrEnvelope = &m_adsrEnvelope;
@@ -34,10 +36,10 @@ float Synth::getSample(float time)
     float sample = 0.0f;
     for (const auto &voice : m_voices) {
         if (voice->isActive())
-            sample += voice->getSample(time);
+            sample += voice->getSample(time, &m_type);
     }
     
-    return sample;
+    return m_gain * sample;
 }
 
 void Synth::noteOn(int key, float time)
@@ -103,4 +105,28 @@ void Synth::draw()
     ImGuiKnobs::Knob("Release", &m_releaseTime, 0.00000001f, 2.0f);
     
     ImGui::End();
+    
+    ImGui::Begin("Oscillator");
+    
+    WaveType selected = m_type;
+    
+    ImGuiKnobs::Knob("Gain", &m_gain, 0.01f, 1.0f);
+//    ImGui::SameLine();
+    
+    if (ImGui::Selectable("Sine", selected == SINE)) m_type = SINE;
+    if (ImGui::Selectable("Square", selected == SQUARE)) m_type = SQUARE;
+    if (ImGui::Selectable("Saw", selected == SAW)) m_type = SAW;
+    if (ImGui::Selectable("Triangle", selected == TRIANGLE)) m_type = TRIANGLE;
+    
+    ImGui::End();
+}
+
+std::vector<float> Synth::getFrequencies()
+{
+    std::vector<float> frequencies;
+    for (const auto &voice : m_voices) {
+        if (voice->isActive())
+            frequencies.push_back(voice->getFrequency());
+    }
+    return frequencies;
 }

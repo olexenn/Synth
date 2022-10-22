@@ -7,19 +7,21 @@
 
 #include <iostream>
 #include <cmath>
+#include <limits>
 
 #include "Audio.h"
 
 const int g_kSampleRate = 44100;
-const float g_kTimeStep = 1.0 / g_kSampleRate;
+const double g_kTimeStep = 1.0 / g_kSampleRate;
 
-Audio::Audio() : m_stream(0), m_fFrequency(0.0f), m_fTime(0.0f)
+Audio::Audio() : m_stream(0), m_time(0.0)
 {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
         std::cout << "ERROR::PORTAUDIO::Can't init portAudio" << std::endl;
         exit(1);
     }
+    std::cout << std::numeric_limits<float>::max();
 }
 
 Audio::~Audio()
@@ -95,12 +97,12 @@ bool Audio::stop()
 
 void Audio::noteOn(int key)
 {
-    synth.noteOn(key, m_fTime);
+    synth.noteOn(key, m_time);
 }
 
 void Audio::noteOff(int key)
 {
-    synth.noteOff(key, m_fTime);
+    synth.noteOff(key, m_time);
 }
 
 int Audio::getCounter()
@@ -117,8 +119,8 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-        *out++ = 0.5 * synth.getSample(m_fTime);
-        m_fTime += g_kTimeStep;
+        *out++ = 0.5 * synth.getSample(static_cast<float>(m_time));
+        m_time += g_kTimeStep;
     }
     
     return paContinue;
@@ -131,10 +133,15 @@ void Audio::paStreamFinishedMethod()
 
 float Audio::getTime()
 {
-    return m_fTime;
+    return m_time;
 }
 
 void Audio::draw()
 {
     synth.draw();
+}
+
+std::vector<float> Audio::getFrequencies()
+{
+    return synth.getFrequencies();
 }

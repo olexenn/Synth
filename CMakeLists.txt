@@ -5,11 +5,12 @@ endif ()
 set(CMAKE_CXX_STANDARD 14)
 project(synth)
 
-# set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only" )
-# set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
-# add_subdirectory(libs/glfw)
+set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only" )
+set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 
 add_subdirectory(libs/portaudio)
+add_subdirectory(libs/glfw)
+add_subdirectory(libs/glad)
 
 file(GLOB_RECURSE SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -17,18 +18,9 @@ file(GLOB_RECURSE SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui/*.h")
 file(GLOB_RECURSE HDRS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HDRS} libs/glad/src/glad.c)
+add_executable(${PROJECT_NAME} ${SOURCES})
 
-add_library(glad libs/glad/src/glad.c)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw)
-target_include_directories(glad PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/glad/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/glad/include)
-
-target_link_libraries(${PROJECT_NAME} PortAudio)
-if (APPLE)
-  target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/libglfw.3.dylib)
-endif()
-target_link_libraries(${PROJECT_NAME} glad)
+target_link_libraries(${PROJECT_NAME} PUBLIC PortAudio glfw glad)

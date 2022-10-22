@@ -40,11 +40,13 @@ public:
     
     void draw();
     
+    std::vector<float> getFrequencies();
+    
 private:
     PaStream *m_stream;
     Synth synth;
-    float m_fFrequency;
-    float m_fTime;
+//    float m_fFrequency;
+    double m_time;
     std::string m_message;
     
     void calculateFrequency(int key);
