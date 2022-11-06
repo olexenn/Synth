@@ -8,17 +8,18 @@
 #ifndef Voice_h
 #define Voice_h
 
-#include <memory>
+#include <array>
 
 #include "Envelope.h"
+#include "Oscillator.h"
 
-enum WaveType
-{
-    SINE,
-    SQUARE,
-    TRIANGLE,
-    SAW,
-};
+//enum WaveType
+//{
+//    SINE,
+//    SQUARE,
+//    TRIANGLE,
+//    SAW,
+//};
 
 // Single note sound
 class Voice
@@ -27,23 +28,24 @@ public:
 //    Voice(Envelope *adsrEnvelope);
     Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime);
     
-    float getSample(float time, WaveType *type);
+    double getSample(double time, WaveType *type);
     
     bool isActive();
     
-    void noteOn(int key, float time);
+    void noteOn(int key, double time);
     
-    void noteOff(float time);
+    void noteOff(double time);
     
-    float getFrequency();
+    double getFrequency();
     
     void reset();
     
-    float calculateFrequency(int key);
+    double calculateFrequency(int key);
 private:
-    float m_frequency;
-    float m_timeOn;
-    float m_timeOff;
+    std::array<Oscillator, 5> m_oscillators;
+    double m_frequency;
+    double m_timeOn;
+    double m_timeOff;
     bool m_active;
     Envelope m_adsrEnvelope;
     

@@ -12,16 +12,18 @@
 #include "Audio.h"
 
 const int g_kSampleRate = 44100;
-const double g_kTimeStep = 1.0 / g_kSampleRate;
+//#define SAMPLE_RATE (44100.0)
+const double g_kTimeStep = 1.0f / g_kSampleRate;
+//#define TIME_STEP (1.0/SAMPLE_RATE)
 
-Audio::Audio() : m_stream(0), m_time(0.0)
+Audio::Audio() : m_stream(0), m_time(1200.0)
 {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
         std::cout << "ERROR::PORTAUDIO::Can't init portAudio" << std::endl;
         exit(1);
     }
-    std::cout << std::numeric_limits<float>::max();
+//    std::cout << std::numeric_limits<float>::max();
 }
 
 Audio::~Audio()
@@ -119,7 +121,7 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-        *out++ = 0.5 * synth.getSample(static_cast<float>(m_time));
+        *out++ = 0.5 * synth.getSample(m_time);
         m_time += g_kTimeStep;
     }
     

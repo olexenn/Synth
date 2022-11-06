@@ -21,10 +21,10 @@ public:
     static const int NumberOfVoices = 20; // max polyphony is 20 notes
     Synth();
     
-    float getSample(float time);
+    double getSample(double time);
     
-    void noteOn(int key, float time);
-    void noteOff(int key, float time);
+    void noteOn(int key, double time);
+    void noteOff(int key, double time);
     
     int getCounter();
     
@@ -38,14 +38,14 @@ private:
     float m_decayTime;
     float m_sustainAmplitude;
     float m_releaseTime;
-    float m_gain;
+    double m_gain;
     
-    std::array<Voice*, NumberOfVoices> m_voices;
+    std::array<std::shared_ptr<Voice>, NumberOfVoices> m_voices;
     Envelope m_adsrEnvelope;
     
     WaveType m_type;
     
-    Voice* findFreeVoice(int key);
+    std::shared_ptr<Voice> findFreeVoice(int key);
     
 };
 

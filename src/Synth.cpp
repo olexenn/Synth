@@ -21,30 +21,33 @@ Synth::Synth()
 , m_releaseTime(0.2f)
 , m_polyphonyCounter(0)
 , m_type(SINE)
-, m_gain(0.5f)
+, m_gain(0.5)
 {
     for (int i = 0; i < NumberOfVoices; i++) {
         Envelope *pAdsrEnvelope = &m_adsrEnvelope;
-        Voice *voice = new Voice(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime);
+//        Voice *voice = new Voice(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime);
+        auto voice = std::make_shared<Voice>(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime);
         m_voices[i] = voice;
     }
     
 }
 
-float Synth::getSample(float time)
+double Synth::getSample(double time)
 {
-    float sample = 0.0f;
+    double sample = 0.0;
     for (const auto &voice : m_voices) {
         if (voice->isActive())
             sample += voice->getSample(time, &m_type);
     }
     
+//    std::cout << "Sample Synth: " << sample << std::endl;
+    
     return m_gain * sample;
 }
 
-void Synth::noteOn(int key, float time)
+void Synth::noteOn(int key, double time)
 {
-    Voice *voice = findFreeVoice(key);
+    auto voice = findFreeVoice(key);
     
     if (voice) {
         m_polyphonyCounter++;
@@ -53,7 +56,7 @@ void Synth::noteOn(int key, float time)
     }
 }
 
-void Synth::noteOff(int key, float time)
+void Synth::noteOff(int key, double time)
 {
     std::cout << "Note Off at: " << time << std::endl;
     m_polyphonyCounter--;
@@ -69,9 +72,9 @@ int Synth::getCounter()
     return m_polyphonyCounter;
 }
 
-Voice* Synth::findFreeVoice(int key)
+std::shared_ptr<Voice> Synth::findFreeVoice(int key)
 {
-    Voice *freeVoice = nullptr;
+    std::shared_ptr<Voice> freeVoice = nullptr;
     
     for (auto &voice : m_voices) {
         if (voice->getFrequency() == voice->calculateFrequency(key) && voice->isActive())
@@ -108,15 +111,15 @@ void Synth::draw()
     
     ImGui::Begin("Oscillator");
     
-    WaveType selected = m_type;
+//    WaveType selected = m_type;
     
-    ImGuiKnobs::Knob("Gain", &m_gain, 0.01f, 1.0f);
+//    ImGuiKnobs::Knob("Gain", &m_gain, 0.01f, 1.0f);
 //    ImGui::SameLine();
     
-    if (ImGui::Selectable("Sine", selected == SINE)) m_type = SINE;
-    if (ImGui::Selectable("Square", selected == SQUARE)) m_type = SQUARE;
-    if (ImGui::Selectable("Saw", selected == SAW)) m_type = SAW;
-    if (ImGui::Selectable("Triangle", selected == TRIANGLE)) m_type = TRIANGLE;
+    if (ImGui::Selectable("Sine", m_type == SINE)) m_type = SINE;
+    if (ImGui::Selectable("Square", m_type == SQUARE)) m_type = SQUARE;
+    if (ImGui::Selectable("Saw", m_type == SAW)) m_type = SAW;
+    if (ImGui::Selectable("Triangle", m_type == TRIANGLE)) m_type = TRIANGLE;
     
     ImGui::End();
 }

@@ -25,10 +25,10 @@ Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float
     m_adsrEnvelope.m_releaseTime = releaseTime;
 }
 
-float Voice::getSample(float time, WaveType *type)
+double Voice::getSample(double time, WaveType *type)
 {
-    float amplitude = m_adsrEnvelope.getAmplitude(time);
-    float sample = 0.0;
+    double amplitude = m_adsrEnvelope.getAmplitude(time);
+    double sample = 0.0f;
     switch (*type) {
         case SINE:
             sample = std::sin(M_PI * 2 * m_frequency * time);
@@ -39,12 +39,12 @@ float Voice::getSample(float time, WaveType *type)
         case SAW:
         {
             // analog saw
-//            float output = 0.0f;
-//
-//            for (float n = 1.0f; n < 40.0f; n++) {
-//                output += (std::sin(n * 2 * M_PI * m_frequency * time)) / n;
-//            }
-//            sample = 0.9 * output * (2.0f / M_PI);
+            //            float output = 0.0f;
+            //
+            //            for (float n = 1.0f; n < 40.0f; n++) {
+            //                output += (std::sin(n * 2 * M_PI * m_frequency * time)) / n;
+            //            }
+            //            sample = 0.9 * output * (2.0f / M_PI);
             
             // digital saw
             sample = (2.0 / M_PI) * (m_frequency * M_PI * std::fmod(time, 1.0 / m_frequency) - (M_PI / 2.0));
@@ -60,7 +60,7 @@ float Voice::getSample(float time, WaveType *type)
     if (m_adsrEnvelope.isNoteOff() && m_adsrEnvelope.getCurrentAmplitude() == 0.0f)
         m_active = false;
     return amplitude * sample;
-    return sample;
+//    return sample;
 }
 
 bool Voice::isActive()
@@ -68,19 +68,19 @@ bool Voice::isActive()
     return m_active;
 }
 
-void Voice::noteOn(int key, float time)
+void Voice::noteOn(int key, double time)
 {
     m_active = true;
     m_frequency = calculateFrequency(key);
     m_adsrEnvelope.noteOn(time);
 }
 
-void Voice::noteOff(float time)
+void Voice::noteOff(double time)
 {
     m_adsrEnvelope.noteOff(time);
 }
 
-float Voice::getFrequency()
+double Voice::getFrequency()
 {
     return m_frequency;
 }
@@ -91,9 +91,9 @@ void Voice::reset()
 }
 
 // https://pages.mtu.edu/~suits/NoteFreqCalcs.html
-float Voice::calculateFrequency(int key)
+double Voice::calculateFrequency(int key)
 {
-    float a = 1.05946309435;
-    float hz = std::pow(a, static_cast<float>(key - 48)); // A3 note as base
-    return 220.0f * hz; // base note frequency
+    double a = 1.05946309435;
+    double hz = std::pow(a, key - 48); // A3 note as base
+    return 220.0 * hz; // base note frequency
 }
