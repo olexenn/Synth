@@ -9,6 +9,9 @@
 #include <cmath>
 #include <limits>
 
+#include <imgui.h>
+#include <imgui-knobs.h>
+
 #include "Audio.h"
 
 const int g_kSampleRate = 44100;
@@ -16,7 +19,7 @@ const int g_kSampleRate = 44100;
 const double g_kTimeStep = 1.0f / g_kSampleRate;
 //#define TIME_STEP (1.0/SAMPLE_RATE)
 
-Audio::Audio() : m_stream(0), m_time(0.0)
+Audio::Audio() : m_stream(0), m_time(0.0), m_panningValue(1.0f)
 {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
@@ -44,7 +47,7 @@ bool Audio::open(PaDeviceIndex index)
     if (pInfo != 0)
         std::cout << "Output Device Name: " << pInfo->name << "\r";
     
-    outputParameters.channelCount = 1; // mono
+    outputParameters.channelCount = 2; // mono
     outputParameters.sampleFormat = paFloat32;
     outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = nullptr;
@@ -121,7 +124,8 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-        *out++ = 0.5 * synth.getSample(m_time);
+        *out++ = (2 - m_panningValue) * synth.getSample(m_time); // left
+        *out++ = m_panningValue * synth.getSample(m_time); // right
         m_time += g_kTimeStep;
     }
     
@@ -141,9 +145,16 @@ float Audio::getTime()
 void Audio::draw()
 {
     synth.draw();
+    
+    ImGui::Begin("Panner");
+    
+    ImGuiKnobs::Knob("Panning", &m_panningValue, 0.0f, 2.0f);
+    
+    ImGui::End();
 }
 
 std::vector<float> Audio::getFrequencies()
 {
     return synth.getFrequencies();
 }
+
