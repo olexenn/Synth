@@ -46,6 +46,7 @@ private:
     PaStream *m_stream;
     Synth synth;
     float m_panningValue;
+    float m_gain;
 //    float m_fFrequency;
     double m_time;
     std::string m_message;

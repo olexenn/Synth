@@ -14,22 +14,14 @@
 #include "Oscillator.h"
 #include "Filter.h"
 
-//enum WaveType
-//{
-//    SINE,
-//    SQUARE,
-//    TRIANGLE,
-//    SAW,
-//};
-
 // Single note sound
 class Voice
 {
 public:
 //    Voice(Envelope *adsrEnvelope);
-    Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime, float *filterLowCuttoff, float *filterHighCuttoff, FilterType *filterType);
+    Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime, float *filterLowCuttoff, float *filterHighCuttoff, FilterType *filterType, bool *isOsc1Active, WaveType *osc1Type, float *osc1Gain, bool *isOsc2Active, WaveType *osc2Type, float *osc2Gain, bool *isOsc3Active, WaveType *osc3Type, float *osc3Gain, float *lfoFrequency, bool *lfoActive, int *osc1Offset, int *osc2Offset, int *osc3Offset, bool *isFilter);
     
-    double getSample(double time, WaveType *type);
+    double getSample(double time);
     
     bool isActive();
     
@@ -43,13 +35,15 @@ public:
     
     double calculateFrequency(int key);
 private:
-    std::array<Oscillator, 5> m_oscillators;
+    std::array<Oscillator, 3> m_oscillators;
     double m_frequency;
+    int m_key;
     double m_timeOn;
     double m_timeOff;
     bool m_active;
     Envelope m_adsrEnvelope;
     Filter m_filter;
+    bool *m_isFilter;
 };
 
 #endif /* Voice_h */

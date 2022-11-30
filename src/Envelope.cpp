@@ -71,3 +71,23 @@ float Envelope::getCurrentAmplitude()
 {
     return m_currentAmplitude;
 }
+
+void Envelope::setAttackTime(float *time)
+{
+    m_attackTime = time;
+}
+
+void Envelope::setDecayTime(float *time)
+{
+    m_decayTime = time;
+}
+
+void Envelope::setSustainAmplitude(float *amp)
+{
+    m_sustainAmplitude = amp;
+}
+
+void Envelope::setReleaseTime(float *time)
+{
+    m_releaseTime = time;
+}

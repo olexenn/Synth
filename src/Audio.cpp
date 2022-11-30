@@ -15,18 +15,15 @@
 #include "Audio.h"
 
 const int g_kSampleRate = 44100;
-//#define SAMPLE_RATE (44100.0)
 const double g_kTimeStep = 1.0f / g_kSampleRate;
-//#define TIME_STEP (1.0/SAMPLE_RATE)
 
-Audio::Audio() : m_stream(0), m_time(0.0), m_panningValue(1.0f)
+Audio::Audio() : m_stream(0), m_time(0.0), m_panningValue(1.0f), m_gain(0.5f)
 {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
         std::cout << "ERROR::PORTAUDIO::Can't init portAudio" << std::endl;
         exit(1);
     }
-//    std::cout << std::numeric_limits<float>::max();
 }
 
 Audio::~Audio()
@@ -124,8 +121,8 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-        *out++ = (2 - m_panningValue) * synth.getSample(m_time); // left
-        *out++ = m_panningValue * synth.getSample(m_time); // right
+        *out++ = m_gain * (2 - m_panningValue) * synth.getSample(m_time); // left
+        *out++ = m_gain * m_panningValue * synth.getSample(m_time); // right
         m_time += g_kTimeStep;
     }
     
@@ -146,9 +143,11 @@ void Audio::draw()
 {
     synth.draw();
     
-    ImGui::Begin("Panner");
+    ImGui::Begin("Master");
     
     ImGuiKnobs::Knob("Panning", &m_panningValue, 0.0f, 2.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("Volume", &m_gain, 0.0f, 2.0f);
     
     ImGui::End();
 }

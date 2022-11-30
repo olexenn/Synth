@@ -38,14 +38,32 @@ private:
     float m_decayTime;
     float m_sustainAmplitude;
     float m_releaseTime;
-    float m_gain;
+    
     float m_filterLowCuttoff;
     float m_filterHighCuttoff;
+    bool m_isFilter;
     
     std::array<std::shared_ptr<Voice>, NumberOfVoices> m_voices;
     Envelope m_adsrEnvelope;
     
-    WaveType m_type;
+    bool m_isOsc1Active;
+    WaveType m_osc1Type;
+    float m_osc1Gain;
+    int m_osc1NoteOffset;
+    
+    bool m_isOsc2Active;
+    WaveType m_osc2Type;
+    float m_osc2Gain;
+    int m_osc2NoteOffset;
+    
+    bool m_isOsc3Active;
+    WaveType m_osc3Type;
+    float m_osc3Gain;
+    int m_osc3NoteOffset;
+    
+    float m_lfoFrequency;
+    bool m_isLfoActive;
+    
     FilterType m_filterType;
     
     std::shared_ptr<Voice> findFreeVoice(int key);

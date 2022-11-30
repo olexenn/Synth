@@ -13,61 +13,59 @@
 #define M_PI  (3.14159265)
 #endif
 
-Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime, float *filterLowCuttoff, float *filterHighCuttoff, FilterType *filterType)
+Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime, float *filterLowCuttoff, float *filterHighCuttoff, FilterType *filterType, bool *isOsc1Active, WaveType *osc1Type, float *osc1Gain, bool *isOsc2Active, WaveType *osc2Type, float *osc2Gain, bool *isOsc3Active, WaveType *osc3Type, float *osc3Gain, float *lfoFrequency, bool *lfoActive, int *osc1Offset, int *osc2Offset, int *osc3Offset, bool *isFilter)
 : m_frequency(0.f)
 , m_timeOn(0.f)
 , m_timeOff(0.f)
 , m_active(false)
+, m_key(0)
+, m_isFilter(isFilter)
 {
-    m_adsrEnvelope.m_attackTime = attackTime;
-    m_adsrEnvelope.m_decayTime = decayTime;
-    m_adsrEnvelope.m_sustainAmplitude = sustainAmplitude;
-    m_adsrEnvelope.m_releaseTime = releaseTime;
-//    m_filter.setCuttoff(filterCutoff);
+    m_adsrEnvelope.setAttackTime(attackTime);
+    m_adsrEnvelope.setDecayTime(decayTime);
+    m_adsrEnvelope.setSustainAmplitude(sustainAmplitude);
+    m_adsrEnvelope.setReleaseTime(releaseTime);
+    
     m_filter.setLowCuttoff(filterLowCuttoff);
     m_filter.setHighCuttoff(filterHighCuttoff);
     m_filter.setFilterType(filterType);
+    
+    m_oscillators[0].setActive(isOsc1Active);
+    m_oscillators[0].setType(osc1Type);
+    m_oscillators[0].setGain(osc1Gain);
+    m_oscillators[0].setNoteOffset(osc1Offset);
+    m_oscillators[1].setActive(isOsc2Active);
+    m_oscillators[1].setType(osc2Type);
+    m_oscillators[1].setGain(osc2Gain);
+    m_oscillators[1].setNoteOffset(osc2Offset);
+    m_oscillators[2].setActive(isOsc3Active);
+    m_oscillators[2].setType(osc3Type);
+    m_oscillators[2].setGain(osc3Gain);
+    m_oscillators[2].setNoteOffset(osc3Offset);
+    m_oscillators[0].setLfoActivity(lfoActive);
+    m_oscillators[0].setLfoFrequency(lfoFrequency);
+    for (int i = 1; i < m_oscillators.size(); i++) {
+        m_oscillators[i].setLfoActivity(nullptr);
+        m_oscillators[i].setLfoFrequency(nullptr);
+    }
 }
 
 
-double Voice::getSample(double time, WaveType *type)
+double Voice::getSample(double time)
 {
     double amplitude = m_adsrEnvelope.getAmplitude(time);
     double sample = 0.0f;
-    switch (*type) {
-        case SINE:
-            sample = std::sin(M_PI * 2 * m_frequency * time);
-            break;
-        case SQUARE:
-            sample = 0.8 * (std::sin(2 * M_PI * m_frequency * time) > 0 ? 1.0 : -1.0);
-            break;
-        case SAW:
-        {
-            // analog saw
-            //            float output = 0.0f;
-            //
-            //            for (float n = 1.0f; n < 40.0f; n++) {
-            //                output += (std::sin(n * 2 * M_PI * m_frequency * time)) / n;
-            //            }
-            //            sample = 0.9 * output * (2.0f / M_PI);
-            
-            // digital saw
-            sample = (2.0 / M_PI) * (m_frequency * M_PI * std::fmod(time, 1.0 / m_frequency) - (M_PI / 2.0));
-            break;
-        }
-        case TRIANGLE:
-            sample = std::asin(std::sin(2 * M_PI * m_frequency * time) * (2.0 / M_PI));
-            break;
-        default:
-            sample = 0.0;
+    
+    for (int i = 0; i < m_oscillators.size(); i++) {
+        sample += m_oscillators[i].getSample(m_key, time);
     }
     
-    sample = m_filter.getFilteredSample(sample);
+    if (*m_isFilter)
+        sample = m_filter.getFilteredSample(sample);
     
     if (m_adsrEnvelope.isNoteOff() && m_adsrEnvelope.getCurrentAmplitude() == 0.0f)
         m_active = false;
     return amplitude * sample;
-//    return sample;
 }
 
 bool Voice::isActive()
@@ -79,6 +77,7 @@ void Voice::noteOn(int key, double time)
 {
     m_active = true;
     m_frequency = calculateFrequency(key);
+    m_key = key;
     m_adsrEnvelope.noteOn(time);
 }
 
