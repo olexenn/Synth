@@ -13,7 +13,7 @@
 #define M_PI  (3.14159265)
 #endif
 
-Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime)
+Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime, float *filterLowCuttoff, float *filterHighCuttoff, FilterType *filterType)
 : m_frequency(0.f)
 , m_timeOn(0.f)
 , m_timeOff(0.f)
@@ -23,7 +23,12 @@ Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float
     m_adsrEnvelope.m_decayTime = decayTime;
     m_adsrEnvelope.m_sustainAmplitude = sustainAmplitude;
     m_adsrEnvelope.m_releaseTime = releaseTime;
+//    m_filter.setCuttoff(filterCutoff);
+    m_filter.setLowCuttoff(filterLowCuttoff);
+    m_filter.setHighCuttoff(filterHighCuttoff);
+    m_filter.setFilterType(filterType);
 }
+
 
 double Voice::getSample(double time, WaveType *type)
 {
@@ -56,6 +61,8 @@ double Voice::getSample(double time, WaveType *type)
         default:
             sample = 0.0;
     }
+    
+    sample = m_filter.getFilteredSample(sample);
     
     if (m_adsrEnvelope.isNoteOff() && m_adsrEnvelope.getCurrentAmplitude() == 0.0f)
         m_active = false;

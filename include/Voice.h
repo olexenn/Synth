@@ -12,6 +12,7 @@
 
 #include "Envelope.h"
 #include "Oscillator.h"
+#include "Filter.h"
 
 //enum WaveType
 //{
@@ -26,7 +27,7 @@ class Voice
 {
 public:
 //    Voice(Envelope *adsrEnvelope);
-    Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime);
+    Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime, float *filterLowCuttoff, float *filterHighCuttoff, FilterType *filterType);
     
     double getSample(double time, WaveType *type);
     
@@ -48,7 +49,7 @@ private:
     double m_timeOff;
     bool m_active;
     Envelope m_adsrEnvelope;
-    
+    Filter m_filter;
 };
 
 #endif /* Voice_h */

@@ -21,12 +21,13 @@ Synth::Synth()
 , m_releaseTime(0.2f)
 , m_polyphonyCounter(0)
 , m_type(SINE)
+, m_filterType(LOW_PASS)
+, m_filterLowCuttoff(19000.0f)
+, m_filterHighCuttoff(0.0f)
 , m_gain(0.5)
 {
     for (int i = 0; i < NumberOfVoices; i++) {
-        Envelope *pAdsrEnvelope = &m_adsrEnvelope;
-//        Voice *voice = new Voice(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime);
-        auto voice = std::make_shared<Voice>(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime);
+        auto voice = std::make_shared<Voice>(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime, &m_filterLowCuttoff, &m_filterHighCuttoff, &m_filterType);
         m_voices[i] = voice;
     }
     
@@ -39,8 +40,6 @@ double Synth::getSample(double time)
         if (voice->isActive())
             sample += voice->getSample(time, &m_type);
     }
-    
-//    std::cout << "Sample Synth: " << sample << std::endl;
     
     return m_gain * sample;
 }
@@ -111,15 +110,24 @@ void Synth::draw()
     
     ImGui::Begin("Oscillator");
     
-//    WaveType selected = m_type;
     
-//    ImGuiKnobs::Knob("Gain", &m_gain, 0.01f, 1.0f);
-//    ImGui::SameLine();
+    ImGuiKnobs::Knob("Gain", &m_gain, 0.01f, 1.0f);
     
     if (ImGui::Selectable("Sine", m_type == SINE)) m_type = SINE;
     if (ImGui::Selectable("Square", m_type == SQUARE)) m_type = SQUARE;
     if (ImGui::Selectable("Saw", m_type == SAW)) m_type = SAW;
     if (ImGui::Selectable("Triangle", m_type == TRIANGLE)) m_type = TRIANGLE;
+    
+    ImGui::End();
+    
+    ImGui::Begin("Filter");
+    
+    if (ImGui::Selectable("LowPass", m_filterType == LOW_PASS)) m_filterType = LOW_PASS;
+    if (ImGui::Selectable("HighPass", m_filterType == HIGH_PASS)) m_filterType = HIGH_PASS;
+    
+    ImGuiKnobs::Knob("Low Pass", &m_filterLowCuttoff, 100.0f, 20000.0f);
+    ImGui::SameLine();
+    ImGuiKnobs::Knob("High Pass", &m_filterHighCuttoff, 100.0f, 3000.0f);
     
     ImGui::End();
 }
