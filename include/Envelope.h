@@ -37,10 +37,10 @@ private:
     float m_actualSustainAmplitude = 0.0f;
     float m_currentAmplitude = 0.0f;
     
-    float* m_attackTime;
-    float* m_decayTime;
-    float* m_sustainAmplitude;
-    float* m_releaseTime;
+    float* m_attackTime = nullptr;
+    float* m_decayTime = nullptr;
+    float* m_sustainAmplitude = nullptr;
+    float* m_releaseTime = nullptr;
     
     bool m_noteOn = false;
 };

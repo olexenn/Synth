@@ -20,6 +20,8 @@
 #include "Keyboard.h"
 #include "Audio.h"
 
+#define DEBUG 0
+
 std::map<ImGuiKey, int> keyCodeMap {
     { ImGuiKey_Z, 39 },
     { ImGuiKey_S, 40 },
@@ -129,8 +131,10 @@ int main(void) {
         // keyboard ui
         keyboard.draw();
         
-        // adsr ui
+        // synth ui
         audio.draw();
+
+#if DEBUG
         
         // debug info
         ImGui::Begin("Debug");
@@ -158,7 +162,7 @@ int main(void) {
         ImGui::Text("Polyphony counter: %d", audio.getCounter());
 
         ImGui::End();
-        
+#endif
         // Rendering
         ImGui::Render();
         int display_w, display_h;

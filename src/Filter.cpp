@@ -4,10 +4,13 @@
 //
 //  Created by Алексей Дудник on 30.11.2022.
 //
-
 #include <cmath>
 
 #include "Filter.h"
+
+#ifndef M_PI
+#define M_PI  (3.14159265358979323846)
+#endif
 
 Filter::Filter() :
 m_input0(0.0),
@@ -19,7 +22,10 @@ m_delayInput1(0.0),
 m_delayInput2(0.0),
 m_delayOutput1(0.0),
 m_delayOutput2(0.0),
-m_frequency(0.0)
+m_frequency(0.0),
+m_lowCuttoff(nullptr),
+m_highCuttoff(nullptr),
+m_filterType(nullptr)
 {
     m_rad = M_PI / 44100.0;
 }

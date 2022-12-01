@@ -4,7 +4,6 @@
 //
 //  Created by Алексей Дудник on 19.10.2022.
 //
-
 #include <cmath>
 #include <algorithm>
 

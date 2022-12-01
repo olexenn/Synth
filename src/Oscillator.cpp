@@ -4,13 +4,16 @@
 //
 //  Created by Алексей Дудник on 29.10.2022.
 //
-
 #include <cmath>
 
 #include <imgui.h>
 #include <imgui-knobs.h>
 
 #include "Oscillator.h"
+
+#ifndef M_PI
+#define M_PI  (3.14159265358979323846)
+#endif
 
 double Oscillator::getSample(int key, double time)
 {

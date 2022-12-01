@@ -6,16 +6,16 @@
 //
 
 #include <iostream>
-#include <cmath>
-#include <limits>
+//#include <cmath>
+//#include <limits>
 
 #include <imgui.h>
 #include <imgui-knobs.h>
 
 #include "Audio.h"
 
-const int g_kSampleRate = 44100;
-const double g_kTimeStep = 1.0f / g_kSampleRate;
+constexpr int g_kSampleRate = 44100;
+constexpr double g_kTimeStep = 1.0 / static_cast<float>(g_kSampleRate);
 
 Audio::Audio() : m_stream(0), m_time(0.0), m_panningValue(1.0f), m_gain(0.5f)
 {

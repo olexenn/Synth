@@ -4,13 +4,12 @@
 //
 //  Created by Алексей Дудник on 20.10.2022.
 //
-
 #include <cmath>
 
 #include "Voice.h"
 
 #ifndef M_PI
-#define M_PI  (3.14159265)
+#define M_PI  (3.14159265358979323846)
 #endif
 
 Voice::Voice(float *attackTime, float *decayTime, float *sustainAmplitude, float *releaseTime, float *filterLowCuttoff, float *filterHighCuttoff, FilterType *filterType, bool *isOsc1Active, WaveType *osc1Type, float *osc1Gain, bool *isOsc2Active, WaveType *osc2Type, float *osc2Gain, bool *isOsc3Active, WaveType *osc3Type, float *osc3Gain, float *lfoFrequency, bool *lfoActive, int *osc1Offset, int *osc2Offset, int *osc3Offset, bool *isFilter)
