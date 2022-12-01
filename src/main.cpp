@@ -11,7 +11,7 @@
 #include <GLES2/gl2.h>
 #endif
 
-#include <iostream>
+//#include <iostream>
 #include <portaudio.h>
 #include <cmath>
 #include <array>
@@ -20,7 +20,7 @@
 #include "Keyboard.h"
 #include "Audio.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 std::map<ImGuiKey, int> keyCodeMap {
     { ImGuiKey_Z, 39 },
@@ -56,7 +56,8 @@ std::map<ImGuiKey, int> keyCodeMap {
 
 static void glfwErrorCallback(int error, const char *description)
 {
-    std::fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+    exit(1);
+//    std::fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
 int main(void) {
@@ -162,6 +163,7 @@ int main(void) {
         ImGui::Text("Polyphony counter: %d", audio.getCounter());
 
         ImGui::End();
+        
 #endif
         // Rendering
         ImGui::Render();

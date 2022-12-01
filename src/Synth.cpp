@@ -104,19 +104,19 @@ void Synth::draw()
 {
     ImGui::Begin("ADSR");
     
-    ImGuiKnobs::Knob("Attack", &m_attackTime, 0.00000001f, 1.0f);
+    ImGuiKnobs::Knob("Attack", &m_attackTime, 0.001f, 1.0f, 0.01f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("Decay", &m_decayTime, 0.0f, 1.0f);
+    ImGuiKnobs::Knob("Decay", &m_decayTime, 0.0f, 1.0f, 0.05f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("Sustain", &m_sustainAmplitude, 0.00000001f, 1.0f);
+    ImGuiKnobs::Knob("Sustain", &m_sustainAmplitude, 0.01f, 1.0f, 0.05f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("Release", &m_releaseTime, 0.00000001f, 2.0f);
+    ImGuiKnobs::Knob("Release", &m_releaseTime, 0.01f, 2.0f, 0.01f);
     
     ImGui::End();
     
     ImGui::Begin("Oscillator 1");
     
-    ImGuiKnobs::Knob("Gain", &m_osc1Gain, 0.0f, 1.0f);
+    ImGuiKnobs::Knob("Gain", &m_osc1Gain, 0.0f, 1.0f, 0.05f);
     ImGui::SameLine();
     ImGuiKnobs::KnobInt("Offset", &m_osc1NoteOffset, 0, 48, 12);
     ImGui::SameLine();
@@ -131,7 +131,7 @@ void Synth::draw()
     ImGui::End();
     ImGui::Begin("Oscillator 2");
     
-    ImGuiKnobs::Knob("Gain", &m_osc2Gain, 0.0f, 1.0f);
+    ImGuiKnobs::Knob("Gain", &m_osc2Gain, 0.0f, 1.0f, 0.05f);
     ImGui::SameLine();
     ImGuiKnobs::KnobInt("Offset", &m_osc2NoteOffset, 0, 48, 12);
     ImGui::SameLine();
@@ -145,7 +145,7 @@ void Synth::draw()
     
     ImGui::End();
     ImGui::Begin("Oscillator3");
-    ImGuiKnobs::Knob("Gain", &m_osc3Gain, 0.0f, 1.0f);
+    ImGuiKnobs::Knob("Gain", &m_osc3Gain, 0.0f, 1.0f, 0.05f);
     ImGui::SameLine();
     ImGuiKnobs::KnobInt("Offset", &m_osc3NoteOffset, 0, 48, 12);
     ImGui::SameLine();
@@ -166,9 +166,9 @@ void Synth::draw()
     if (ImGui::Selectable("LowPass", m_filterType == LOW_PASS)) m_filterType = LOW_PASS;
     if (ImGui::Selectable("HighPass", m_filterType == HIGH_PASS)) m_filterType = HIGH_PASS;
     
-    ImGuiKnobs::Knob("Low Pass", &m_filterLowCuttoff, 100.0f, 20000.0f);
+    ImGuiKnobs::Knob("Low Pass", &m_filterLowCuttoff, 100.0f, 20000.0f, 20.0f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("High Pass", &m_filterHighCuttoff, 100.0f, 3000.0f);
+    ImGuiKnobs::Knob("High Pass", &m_filterHighCuttoff, 100.0f, 3000.0f, 20.0f);
     
     ImGui::End();
     
@@ -176,7 +176,7 @@ void Synth::draw()
     
     ImGui::Checkbox("Active", &m_isLfoActive);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("Freq", &m_lfoFrequency, 1.0f, 100.0f);
+    ImGuiKnobs::Knob("Freq", &m_lfoFrequency, 1.0f, 100.0f, 1.0f);
     
     ImGui::End();
 }

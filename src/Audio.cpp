@@ -5,9 +5,7 @@
 //  Created by Алексей Дудник on 18.10.2022.
 //
 
-#include <iostream>
-//#include <cmath>
-//#include <limits>
+//#include <iostream>
 
 #include <imgui.h>
 #include <imgui-knobs.h>
@@ -16,12 +14,10 @@
 
 constexpr int g_kSampleRate = 44100;
 constexpr double g_kTimeStep = 1.0 / static_cast<float>(g_kSampleRate);
-
 Audio::Audio() : m_stream(0), m_time(0.0), m_panningValue(1.0f), m_gain(0.5f)
 {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
-        std::cout << "ERROR::PORTAUDIO::Can't init portAudio" << std::endl;
         exit(1);
     }
 }
@@ -41,15 +37,15 @@ bool Audio::open(PaDeviceIndex index)
     if (outputParameters.device == paNoDevice) return false;
     
     const PaDeviceInfo *pInfo = Pa_GetDeviceInfo(outputParameters.device);
-    if (pInfo != 0)
-        std::cout << "Output Device Name: " << pInfo->name << "\r";
+//    if (pInfo != 0)
+//        std::cout << "Output Device Name: " << pInfo->name << "\r";
     
-    outputParameters.channelCount = 2; // mono
+    outputParameters.channelCount = 2; // stereo
     outputParameters.sampleFormat = paFloat32;
     outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = nullptr;
     
-    PaError err = Pa_OpenStream(&m_stream, nullptr, &outputParameters, g_kSampleRate, paFramesPerBufferUnspecified, paClipOff, &Audio::paCallback, this);
+    PaError err = Pa_OpenStream(&m_stream, nullptr, &outputParameters, g_kSampleRate, 64, paNoFlag, &Audio::paCallback, this);
     
     if (err != paNoError)
         return false;
@@ -131,7 +127,7 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
 
 void Audio::paStreamFinishedMethod()
 {
-    std::cout << "Stream Completed" << std::endl;
+//    std::cout << "Stream Completed" << std::endl;
 }
 
 float Audio::getTime()

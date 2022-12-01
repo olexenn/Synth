@@ -49,7 +49,7 @@ private:
     float m_gain;
 //    float m_fFrequency;
     double m_time;
-    std::string m_message;
+//    std::string m_message;
     
     void calculateFrequency(int key);
     
