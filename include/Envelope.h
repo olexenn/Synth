@@ -8,41 +8,61 @@
 #ifndef Envelope_h
 #define Envelope_h
 
+enum AdsrMachine
+{
+    ATTACK,
+    SUSTAIN,
+    DECAY,
+    RELEASE
+};
+
+struct AdsrParams
+{
+    float attackTime;
+    float decayTime;
+    float sustainAmplitude;
+    float releaseTime;
+};
+
 // ADSR Envelope
 class Envelope {
 public:
+//    Envelope(float *attackTime, float *decayTime,
+//             float *sustainAmplitude, float *releaseTime);
     Envelope() = default;
     
-    void noteOn(float time);
+    void noteOn(double time);
     
-    void noteOff(float time);
+    void noteOff(double time);
     
-    float getAmplitude(float time);
+    double getAmplitude(double time);
     
     void reset();
     
     bool isNoteOff();
     
-    float getCurrentAmplitude();
+    double getCurrentAmplitude();
     
-    void setAttackTime(float *time);
-    void setDecayTime(float *time);
-    void setSustainAmplitude(float *amp);
-    void setReleaseTime(float *time);
+    float& getAttack() { return m_attackTime; };
+    float& getDecay() { return m_decayTime; };
+    float& getSustain() { return m_sustainAmplitude; };
+    float& getRelease() { return m_releaseTime; };
     
 private:
-    float m_startAmplitude = 1.0f;
-    float m_triggerOnTime = 0.0f;
-    float m_triggerOffTime = 0.0f;
-    float m_actualSustainAmplitude = 0.0f;
-    float m_currentAmplitude = 0.0f;
+    double m_startAmplitude = 1.0;
+    double m_triggerOnTime = 0.0;
+    double m_triggerOffTime = 0.0;
+    double m_actualSustainAmplitude = 0.0;
+    double m_currentAmplitude = 0.0;
     
-    float* m_attackTime = nullptr;
-    float* m_decayTime = nullptr;
-    float* m_sustainAmplitude = nullptr;
-    float* m_releaseTime = nullptr;
+    float m_attackTime = 0.1f;
+    float m_decayTime = 0.01f;
+    float m_sustainAmplitude = 0.8f;
+    float m_releaseTime = 0.2f;
     
     bool m_noteOn = false;
+    
+    AdsrMachine m_state = ATTACK;
 };
 
 #endif /* Envelope_h */

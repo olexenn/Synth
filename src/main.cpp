@@ -70,12 +70,11 @@ int main(void) {
     const char *glsl_version = "#version 150";
     
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-//    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 #endif
     
     GLFWwindow *window = glfwCreateWindow(1280, 720, "Synth", NULL, NULL);
@@ -88,14 +87,20 @@ int main(void) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
+//    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     
     ImGui::StyleColorsClassic();
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+    
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    
-    ImGuiStyle &style = ImGui::GetStyle();
-    
-    style.ScaleAllSizes(highDPIScaleFactor);
+    ImGui_ImplOpenGL3_Init(glsl_version);
     
     ImVec4 clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     
@@ -108,6 +113,8 @@ int main(void) {
     Keyboard keyboard;
     
     audio.start();
+    
+    std::array<int, 20> keysPressed = {0};
     
     // main loop
     while (!glfwWindowShouldClose(window)) {
@@ -141,6 +148,7 @@ int main(void) {
         ImGui::Begin("Debug");
 
         auto currentNotes = keyboard.getKeys();
+        
 
         ImGui::Text("Playing notes: ");
 
@@ -148,17 +156,21 @@ int main(void) {
             ImGui::SameLine();
             ImGui::Text("%d", note);
         }
-
-        ImGui::Text("Playing frequencies: ");
-
-        auto currentFrequencies = audio.getFrequencies();
-
-        for (const auto &freq : currentFrequencies) {
-            ImGui::SameLine();
-            ImGui::Text("%f", freq);
+        
+        auto voices = audio.getVoices();
+        for (const auto &voice : voices) {
+            ImGui::Text("Voice %d\r status: %d", voice->getKey(), voice->isActive());
         }
 
         ImGui::Text("Time: %f", audio.getTime());
+        
+        float sample = audio.getSample();
+        if (sample > 1.0f || sample < -1.0f)
+            ImGui::Text("Sample peaked");
+        else
+            ImGui::Text("Sample ok");
+        ImGui::Text("Sample: %f", audio.getSample());
+        
 
         ImGui::Text("Polyphony counter: %d", audio.getCounter());
 
@@ -175,6 +187,7 @@ int main(void) {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         
         glfwSwapBuffers(window);
+//        ImGui::UpdatePlatformWindows();
     }
     
     // cleanup

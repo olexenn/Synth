@@ -4,7 +4,6 @@
 //
 //  Created by Алексей Дудник on 30.11.2022.
 //
-#include <cmath>
 
 #include "Filter.h"
 
@@ -12,32 +11,14 @@
 #define M_PI  (3.14159265358979323846)
 #endif
 
-Filter::Filter()
-: m_input0(0.0)
-, m_input1(0.0)
-, m_input2(0.0)
-, m_output1(0.0)
-, m_output2(0.0)
-, m_delayInput1(0.0)
-, m_delayInput2(0.0)
-, m_delayOutput1(0.0)
-, m_delayOutput2(0.0)
-, m_frequency(0.0)
-, m_lowCuttoff(nullptr)
-, m_highCuttoff(nullptr)
-, m_filterType(nullptr)
-{
-    m_rad = M_PI / 44100.0;
-}
-
 void Filter::calculateLowCoefficients()
 {
-    if (*m_lowCuttoff < 1)
-        *m_lowCuttoff = 1;
+    if (m_lowCuttoff < 1)
+        m_lowCuttoff = 1;
     if (m_frequency < 0.5)
         m_frequency = 0.5;
     
-    double c = 1 / std::tan(m_rad * *m_lowCuttoff);
+    double c = 1 / std::tan(m_rad * m_lowCuttoff);
     double c2 = c * c;
     double csqr2 = std::sqrt(2) * c;
     double oned = 1.0 / (c2 + csqr2 + 1.0);
@@ -51,7 +32,7 @@ void Filter::calculateLowCoefficients()
 
 void Filter::calculateHighCoefficients()
 {
-    double c = std::tan(m_rad * *m_highCuttoff);
+    double c = std::tan(m_rad * m_highCuttoff);
     double c2 = c * c;
     double csqr2 = std::sqrt(2) * c;
     double oned = 1.0 / (1.0 + c2 + csqr2);
@@ -81,7 +62,7 @@ void Filter::calculateHighCoefficients()
 
 double Filter::getFilteredSample(double inputSample)
 {
-    switch (*m_filterType) {
+    switch (m_filterType) {
         case LOW_PASS:
             calculateLowCoefficients();
             break;
@@ -100,17 +81,8 @@ double Filter::getFilteredSample(double inputSample)
     return out;
 }
 
-void Filter::setLowCuttoff(float *lowCuttoff)
-{
-    m_lowCuttoff = lowCuttoff;
-}
-
-void Filter::setHighCuttoff(float *highCuttoff)
-{
-    m_highCuttoff = highCuttoff;
-}
-
-void Filter::setFilterType(FilterType *type)
+void Filter::setFilterType(FilterType type)
 {
     m_filterType = type;
 }
+

@@ -30,43 +30,40 @@ public:
     
     void draw();
     
-    std::vector<float> getFrequencies();
-  
+    const std::array<Voice*, NumberOfVoices>& getVoices();
+    
 private:
-    int m_polyphonyCounter;
-    float m_attackTime;
-    float m_decayTime;
-    float m_sustainAmplitude;
-    float m_releaseTime;
+    int m_polyphonyCounter = 0;
     
-    float m_filterLowCuttoff;
-    float m_filterHighCuttoff;
-    bool m_isFilter;
+//    Envelope m_adsrEnvelope;
+//    std::unique_ptr<Envelope> m_adsrEnvelope;
+    std::unique_ptr<Envelope> m_adsrEnvelope = std::make_unique<Envelope>();
+    AdsrParams m_adsrParams;
     
-    std::array<std::shared_ptr<Voice>, NumberOfVoices> m_voices;
-    Envelope m_adsrEnvelope;
+    Filter m_filter;
     
-    bool m_isOsc1Active;
-    WaveType m_osc1Type;
-    float m_osc1Gain;
-    int m_osc1NoteOffset;
+    std::array<Voice*, NumberOfVoices> m_voices;
     
-    bool m_isOsc2Active;
-    WaveType m_osc2Type;
-    float m_osc2Gain;
-    int m_osc2NoteOffset;
+    bool m_isOsc1Active = true;
+    WaveType m_osc1Type = SINE;
+    float m_osc1Gain = 0.5f;
+    int m_osc1NoteOffset = 0;
     
-    bool m_isOsc3Active;
-    WaveType m_osc3Type;
-    float m_osc3Gain;
-    int m_osc3NoteOffset;
+    bool m_isOsc2Active = false;
+    WaveType m_osc2Type = SINE;
+    float m_osc2Gain = 0.5f;
+    int m_osc2NoteOffset = 0;
     
-    float m_lfoFrequency;
-    bool m_isLfoActive;
+    bool m_isOsc3Active = false;
+    WaveType m_osc3Type = SINE;
+    float m_osc3Gain = 0.5f;
+    int m_osc3NoteOffset = 0;
     
-    FilterType m_filterType;
+    float m_lfoFrequency = 5.0f;
+    bool m_isLfoActive = false;
     
-    std::shared_ptr<Voice> findFreeVoice(int key);
+    
+    Voice* findFreeVoice(int key);
     
 };
 

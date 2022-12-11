@@ -13,32 +13,22 @@
 #include "Synth.h"
 
 Synth::Synth()
-: m_attackTime(0.1f)
-, m_decayTime(0.01f)
-, m_sustainAmplitude(0.8f)
-, m_releaseTime(0.2f)
-, m_polyphonyCounter(0)
-, m_osc1Type(SINE)
-, m_osc2Type(SINE)
-, m_osc3Type(SINE)
-, m_osc1Gain(0.5f)
-, m_osc2Gain(0.5f)
-, m_osc3Gain(0.5f)
-, m_isOsc1Active(true)
-, m_isOsc2Active(false)
-, m_isOsc3Active(false)
-, m_filterType(LOW_PASS)
-, m_isFilter(false)
-, m_filterLowCuttoff(19000.0f)
-, m_filterHighCuttoff(100.0f)
-, m_isLfoActive(false)
-, m_lfoFrequency(5.0f)
-, m_osc1NoteOffset(0)
-, m_osc2NoteOffset(0)
-, m_osc3NoteOffset(0)
 {
+    m_adsrParams.attackTime = 0.1f;
+    m_adsrParams.decayTime = 0.01f;
+    m_adsrParams.sustainAmplitude = 0.8f;
+    m_adsrParams.releaseTime = 0.2f;
+    
+    auto pOsc1 = new Oscillator(&m_osc1Type, &m_isOsc1Active,
+                                &m_osc1NoteOffset, &m_osc1Gain);
+    auto pOsc2 = new Oscillator(&m_osc2Type, &m_isOsc2Active,
+                                &m_osc2NoteOffset, &m_osc2Gain);
+    auto pOsc3 = new Oscillator(&m_osc3Type, &m_isOsc3Active,
+                                &m_osc3NoteOffset, &m_osc3Gain);
+    auto pLfo = new Lfo(&m_lfoFrequency, &m_isLfoActive);
+    
     for (int i = 0; i < NumberOfVoices; i++) {
-        auto voice = std::make_shared<Voice>(&m_attackTime, &m_decayTime, &m_sustainAmplitude, &m_releaseTime, &m_filterLowCuttoff, &m_filterHighCuttoff, &m_filterType, &m_isOsc1Active, &m_osc1Type, &m_osc1Gain, &m_isOsc2Active, &m_osc2Type, &m_osc2Gain, &m_isOsc3Active, &m_osc3Type, &m_osc3Gain, &m_lfoFrequency, &m_isLfoActive, &m_osc1NoteOffset, &m_osc2NoteOffset, &m_osc3NoteOffset, &m_isFilter);
+        auto voice = new Voice(&m_adsrParams, pOsc1, pOsc2, pOsc3, pLfo);
         m_voices[i] = voice;
     }
     
@@ -47,9 +37,13 @@ Synth::Synth()
 double Synth::getSample(double time)
 {
     double sample = 0.0;
-    for (const auto &voice : m_voices) {
-        if (voice->isActive())
+    for (auto voice : m_voices) {
+        if (voice->isActive()) {
             sample += voice->getSample(time);
+            
+            if (m_filter.isFilterOn())
+                sample = m_filter.getFilteredSample(sample);
+        }
     }
     
     return sample;
@@ -61,16 +55,19 @@ void Synth::noteOn(int key, double time)
     
     if (voice) {
         m_polyphonyCounter++;
-        voice->reset();
+//        voice->reset();
+//        m_adsrEnvelope->noteOn(time);
         voice->noteOn(key, time);
     }
 }
 
 void Synth::noteOff(int key, double time)
 {
-    m_polyphonyCounter--;
-        for (const auto &voice: m_voices) {
-            if (voice->isActive() && voice->getFrequency() == voice->calculateFrequency(key)) {
+        for (auto voice : m_voices) {
+            if (voice->isActive() && voice->getKey() == key) {
+                m_polyphonyCounter--;
+//                m_adsrEnvelope->noteOff(time);
+                voice->reset();
                 voice->noteOff(time);
             }
         }
@@ -81,36 +78,37 @@ int Synth::getCounter()
     return m_polyphonyCounter;
 }
 
-std::shared_ptr<Voice> Synth::findFreeVoice(int key)
+Voice* Synth::findFreeVoice(int key)
 {
-    std::shared_ptr<Voice> freeVoice = nullptr;
-    
-    for (auto &voice : m_voices) {
-        if (voice->getFrequency() == voice->calculateFrequency(key) && voice->isActive())
+    for (auto voice : m_voices) {
+        if (voice->isActive() && voice->getKey() == key)
             return nullptr;
     }
     
     for (auto &voice : m_voices) {
         if (!(voice->isActive())) {
-            freeVoice = voice;
-            break;
+            return voice;
         }
+        
     }
-    
-    return freeVoice;
+}
+
+const std::array<Voice*, Synth::NumberOfVoices>& Synth::getVoices()
+{
+    return m_voices;
 }
 
 void Synth::draw()
 {
     ImGui::Begin("ADSR");
     
-    ImGuiKnobs::Knob("Attack", &m_attackTime, 0.001f, 1.0f, 0.01f);
+    ImGuiKnobs::Knob("Attack", &m_adsrParams.attackTime, 0.001f, 1.0f, 0.01f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("Decay", &m_decayTime, 0.0f, 1.0f, 0.05f);
+    ImGuiKnobs::Knob("Decay", &m_adsrParams.decayTime, 0.0f, 1.0f, 0.05f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("Sustain", &m_sustainAmplitude, 0.01f, 1.0f, 0.05f);
+    ImGuiKnobs::Knob("Sustain", &m_adsrParams.sustainAmplitude, 0.01f, 1.0f, 0.05f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("Release", &m_releaseTime, 0.01f, 2.0f, 0.01f);
+    ImGuiKnobs::Knob("Release", &m_adsrParams.releaseTime, 0.01f, 2.0f, 0.01f);
     
     ImGui::End();
     
@@ -161,14 +159,16 @@ void Synth::draw()
     
     ImGui::Begin("Filter");
     
-    ImGui::Checkbox("Active", &m_isFilter);
+    ImGui::Checkbox("Active", &m_filter.getActivity());
     
-    if (ImGui::Selectable("LowPass", m_filterType == LOW_PASS)) m_filterType = LOW_PASS;
-    if (ImGui::Selectable("HighPass", m_filterType == HIGH_PASS)) m_filterType = HIGH_PASS;
+    if (ImGui::Selectable("LowPass", m_filter.getFilterType() == LOW_PASS))
+        m_filter.setFilterType(LOW_PASS);
+    if (ImGui::Selectable("HighPass", m_filter.getFilterType() == HIGH_PASS))
+        m_filter.setFilterType(HIGH_PASS);
     
-    ImGuiKnobs::Knob("Low Pass", &m_filterLowCuttoff, 100.0f, 20000.0f, 20.0f);
+    ImGuiKnobs::Knob("Low Pass", &m_filter.getLowCuttoff(), 100.0f, 20000.0f, 20.0f);
     ImGui::SameLine();
-    ImGuiKnobs::Knob("High Pass", &m_filterHighCuttoff, 100.0f, 3000.0f, 20.0f);
+    ImGuiKnobs::Knob("High Pass", &m_filter.getHighCuttoff(), 100.0f, 3000.0f, 20.0f);
     
     ImGui::End();
     
@@ -181,12 +181,3 @@ void Synth::draw()
     ImGui::End();
 }
 
-std::vector<float> Synth::getFrequencies()
-{
-    std::vector<float> frequencies;
-    for (const auto &voice : m_voices) {
-        if (voice->isActive())
-            frequencies.push_back(voice->getFrequency());
-    }
-    return frequencies;
-}

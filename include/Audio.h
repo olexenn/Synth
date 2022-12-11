@@ -33,6 +33,7 @@ public:
     bool stop();
     
     float getTime();
+    float getSample();
     
     void noteOn(int key);
     
@@ -40,18 +41,18 @@ public:
     
     void draw();
     
-    std::vector<float> getFrequencies();
+    const std::array<Voice*, Synth::NumberOfVoices>& getVoices();
     
 private:
     PaStream *m_stream;
     Synth synth;
     float m_panningValue;
     float m_gain;
-//    float m_fFrequency;
     double m_time;
-//    std::string m_message;
+    float m_sample;
     
     void calculateFrequency(int key);
+    
     
     int paCallbackMethod(const void *inputBuffer, void *outputBuffer,
                          unsigned long framesPerBuffer,

@@ -8,6 +8,8 @@
 #ifndef Filter_h
 #define Filter_h
 
+#include <cmath>
+
 enum FilterType
 {
     LOW_PASS,
@@ -17,29 +19,35 @@ enum FilterType
 class Filter
 {
 public:
-    Filter();
+    Filter() = default;
     double getFilteredSample(double inputSample);
     
-    void setLowCuttoff(float *lowCuttoff);
-    void setHighCuttoff(float *highCuttoff);
-    void setFilterType(FilterType *type);
+    void setFilterType(FilterType type);
+    
+    FilterType getFilterType() { return m_filterType; }
+    bool isFilterOn() { return m_isActive; }
+    float& getLowCuttoff() { return m_lowCuttoff; }
+    float& getHighCuttoff() { return m_highCuttoff; }
+    bool& getActivity() { return m_isActive; }
+    
     
 private:
-    double m_rad;
-    double m_input0;
-    double m_input1;
-    double m_input2;
-    double m_output1;
-    double m_output2;
-    double m_delayInput1;
-    double m_delayInput2;
-    double m_delayOutput1;
-    double m_delayOutput2;
-    double m_frequency;
-    float *m_lowCuttoff;
-    float *m_highCuttoff;
+    double m_rad = M_PI / 44100.0;
+    double m_input0 = 0.0;
+    double m_input1 = 0.0;
+    double m_input2 = 0.0;
+    double m_output1 = 0.0;
+    double m_output2 = 0.0;
+    double m_delayInput1 = 0.0;
+    double m_delayInput2 = 0.0;
+    double m_delayOutput1 = 0.0;
+    double m_delayOutput2 = 0.0;
+    double m_frequency = 0.0;
     
-    FilterType *m_filterType;
+    bool m_isActive = false;
+    float m_lowCuttoff = 20000.0f;
+    float m_highCuttoff = 10.0f;
+    FilterType m_filterType = LOW_PASS;
     
     void calculateLowCoefficients();
     void calculateHighCoefficients();

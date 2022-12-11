@@ -20,22 +20,14 @@ enum WaveType
 class Oscillator
 {
 public:
-    Oscillator() = default;
-    double getSample(int key, double time);
+    Oscillator(WaveType *type, bool *isActive, int *noteOffset, float *gain);
+    double getSample(int key, double time, double lfoFrequency);
     void draw();
-    void setType(WaveType *type);
-    void setGain(float *gain);
-    void setActive(bool *isOscActive);
-    void setLfoActivity(bool *isLfoActive);
-    void setLfoFrequency(float *frequency);
-    void setNoteOffset(int *offset);
     
 private:
     WaveType *m_type;
     float *m_gain;
     bool *m_isActive;
-    float *m_lfoFrequency;
-    bool *m_isLfoActive;
     int *m_noteOffset;
     
     double calculateFrequency(int key);

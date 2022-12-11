@@ -5,7 +5,7 @@
 //  Created by Алексей Дудник on 18.10.2022.
 //
 
-//#include <iostream>
+#include <iostream>
 
 #include <imgui.h>
 #include <imgui-knobs.h>
@@ -14,6 +14,7 @@
 
 constexpr int g_kSampleRate = 44100;
 constexpr double g_kTimeStep = 1.0 / static_cast<float>(g_kSampleRate);
+
 Audio::Audio() : m_stream(0), m_time(0.0), m_panningValue(1.0f), m_gain(0.5f)
 {
     PaError err = Pa_Initialize();
@@ -37,8 +38,15 @@ bool Audio::open(PaDeviceIndex index)
     if (outputParameters.device == paNoDevice) return false;
     
     const PaDeviceInfo *pInfo = Pa_GetDeviceInfo(outputParameters.device);
-//    if (pInfo != 0)
-//        std::cout << "Output Device Name: " << pInfo->name << "\r";
+    if (pInfo != 0) {
+//        std::cout << "Output Device Name: " << pInfo->name << std::endl;
+//        std::cout << "Host API: " << pInfo->hostApi << std::endl;
+//        std::cout << "Sample rate: " << pInfo->defaultSampleRate << std::endl;
+//        std::cout << "Latency: " << pInfo->defaultLowOutputLatency << std::endl;
+//        std::cout << "Host Api: " << Pa_GetHostApiInfo(pInfo->hostApi) << std::endl;
+        auto hostApi = Pa_GetHostApiInfo(pInfo->hostApi);
+        std::cout << "Host API: " << hostApi->name << std::endl;
+    }
     
     outputParameters.channelCount = 2; // stereo
     outputParameters.sampleFormat = paFloat32;
@@ -117,8 +125,9 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-        *out++ = m_gain * (2 - m_panningValue) * synth.getSample(m_time); // left
-        *out++ = m_gain * m_panningValue * synth.getSample(m_time); // right
+        m_sample = synth.getSample(m_time);
+        *out++ = m_gain * (2 - m_panningValue) * m_sample; // left
+        *out++ = m_gain * m_panningValue * m_sample; // right
         m_time += g_kTimeStep;
     }
     
@@ -135,6 +144,11 @@ float Audio::getTime()
     return m_time;
 }
 
+float Audio::getSample()
+{
+    return m_sample;
+}
+
 void Audio::draw()
 {
     synth.draw();
@@ -148,8 +162,7 @@ void Audio::draw()
     ImGui::End();
 }
 
-std::vector<float> Audio::getFrequencies()
+const std::array<Voice*, Synth::NumberOfVoices>& Audio::getVoices()
 {
-    return synth.getFrequencies();
+    return synth.getVoices();
 }
-
