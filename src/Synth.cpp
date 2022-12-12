@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 #include <imgui.h>
 #include <imgui-knobs.h>
@@ -290,6 +291,8 @@ void Synth::loadPreset(std::string name)
 {
     std::string fullName = name + ".preset";
     std::ifstream preset;
+    //std::cout << fullName << std::endl;
+    //std::cin.get();
     preset.open("presets/" + fullName);
     if (!preset) {
         std::cerr << "ERROR: Couldn't open preset for reading\n";
@@ -345,8 +348,9 @@ void Synth::getAllPresets()
 {
     if (!m_presets.empty())
         m_presets = {};
-    for (const auto& file : std::filesystem::directory_iterator("./presets/")) {
-        std::string p = file.path();
+
+    for (const auto& file : std::filesystem::directory_iterator("./presets")) {
+        std::string p = file.path().u8string();
         if (p.find(".preset") != std::string::npos) {
             p.erase(0, 10);
             m_presets.push_back(p.substr(0, p.find(".")));
