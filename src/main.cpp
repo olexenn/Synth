@@ -140,7 +140,9 @@ int main(void) {
         keyboard.draw();
         
         // synth ui
-        audio.draw();
+        audio.draw(style);
+        
+        ImGui::ShowDemoWindow();
 
 #if DEBUG
         

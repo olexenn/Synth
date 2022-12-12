@@ -149,9 +149,9 @@ float Audio::getSample()
     return m_sample;
 }
 
-void Audio::draw()
+void Audio::draw(ImGuiStyle& style)
 {
-    synth.draw();
+    synth.draw(style);
     
     ImGui::Begin("Master");
     

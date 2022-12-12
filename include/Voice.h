@@ -20,7 +20,7 @@
 class Voice
 {
 public:
-    Voice(AdsrParams *params, Oscillator *osc1, Oscillator *osc2,
+    Voice(Envelope *pEnv, Oscillator *osc1, Oscillator *osc2,
           Oscillator *osc3, Lfo *lfo);
     
     double getSample(double time);
@@ -36,6 +36,8 @@ public:
     
     double calculateFrequency(int key);
     
+    void updateAdsrParams(AdsrParams *params);
+    
     int getKey();
     
 private:
@@ -43,7 +45,7 @@ private:
     double m_timeOn = 0.0;
     double m_timeOff = 0.0;
     bool m_active = false;
-    Envelope m_adsr;
+    Envelope *m_adsr;
     std::array<Oscillator*, 3> m_oscillators;
     Lfo *m_lfo;
 };

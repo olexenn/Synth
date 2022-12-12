@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <array>
+#include <string>
 #include <memory>
 
 #include "Envelope.h"
@@ -28,7 +29,11 @@ public:
     
     int getCounter();
     
-    void draw();
+    void draw(ImGuiStyle& style);
+    
+    void getAllPresets();
+    void savePreset(std::string name);
+    void loadPreset(std::string name);
     
     const std::array<Voice*, NumberOfVoices>& getVoices();
     
@@ -37,34 +42,54 @@ private:
     
 //    Envelope m_adsrEnvelope;
 //    std::unique_ptr<Envelope> m_adsrEnvelope;
-    std::unique_ptr<Envelope> m_adsrEnvelope = std::make_unique<Envelope>();
+//    std::unique_ptr<Envelope> m_adsrEnvelope = std::make_unique<Envelope>();
     AdsrParams m_adsrParams;
     
     Filter m_filter;
     
     std::array<Voice*, NumberOfVoices> m_voices;
     
-    bool m_isOsc1Active = true;
-    WaveType m_osc1Type = SINE;
-    float m_osc1Gain = 0.5f;
-    int m_osc1NoteOffset = 0;
+//    bool m_isOsc1Active = true;
+//    WaveType m_osc1Type = SINE;
+//    float m_osc1Gain = 0.5f;
+//    int m_osc1NoteOffset = 0;
+//
+//    bool m_isOsc2Active = false;
+//    WaveType m_osc2Type = SINE;
+//    float m_osc2Gain = 0.5f;
+//    int m_osc2NoteOffset = 0;
+//
+//    bool m_isOsc3Active = false;
+//    WaveType m_osc3Type = SINE;
+//    float m_osc3Gain = 0.5f;
+//    int m_osc3NoteOffset = 0;
+//
+//    float m_lfoFrequency = 5.0f;
+//    bool m_isLfoActive = false;
     
-    bool m_isOsc2Active = false;
-    WaveType m_osc2Type = SINE;
-    float m_osc2Gain = 0.5f;
-    int m_osc2NoteOffset = 0;
+    bool m_isOsc1Active;
+    WaveType m_osc1Type;
+    float m_osc1Gain;
+    int m_osc1NoteOffset;
     
-    bool m_isOsc3Active = false;
-    WaveType m_osc3Type = SINE;
-    float m_osc3Gain = 0.5f;
-    int m_osc3NoteOffset = 0;
+    bool m_isOsc2Active;
+    WaveType m_osc2Type;
+    float m_osc2Gain;
+    int m_osc2NoteOffset;
     
-    float m_lfoFrequency = 5.0f;
-    bool m_isLfoActive = false;
+    bool m_isOsc3Active;
+    WaveType m_osc3Type;
+    float m_osc3Gain;
+    int m_osc3NoteOffset;
     
+    float m_lfoFrequency;
+    bool m_isLfoActive;
     
     Voice* findFreeVoice(int key);
     
+    int m_counter = 0;
+    
+    std::vector<std::string> m_presets;
 };
 
 #endif /* Synth_h */

@@ -27,9 +27,9 @@ struct AdsrParams
 // ADSR Envelope
 class Envelope {
 public:
-//    Envelope(float *attackTime, float *decayTime,
-//             float *sustainAmplitude, float *releaseTime);
-    Envelope() = default;
+    Envelope(float *attackTime, float *decayTime,
+             float *sustainAmplitude, float *releaseTime);
+//    Envelope() = default;
     
     void noteOn(double time);
     
@@ -43,10 +43,10 @@ public:
     
     double getCurrentAmplitude();
     
-    float& getAttack() { return m_attackTime; };
-    float& getDecay() { return m_decayTime; };
-    float& getSustain() { return m_sustainAmplitude; };
-    float& getRelease() { return m_releaseTime; };
+//    float& getAttack() { return m_attackTime; };
+//    float& getDecay() { return m_decayTime; };
+//    float& getSustain() { return m_sustainAmplitude; };
+//    float& getRelease() { return m_releaseTime; };
     
 private:
     double m_startAmplitude = 1.0;
@@ -55,10 +55,10 @@ private:
     double m_actualSustainAmplitude = 0.0;
     double m_currentAmplitude = 0.0;
     
-    float m_attackTime = 0.1f;
-    float m_decayTime = 0.01f;
-    float m_sustainAmplitude = 0.8f;
-    float m_releaseTime = 0.2f;
+    float *m_attackTime;
+    float *m_decayTime;
+    float *m_sustainAmplitude;
+    float *m_releaseTime;
     
     bool m_noteOn = false;
     

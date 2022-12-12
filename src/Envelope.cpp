@@ -10,14 +10,14 @@
 #include "Envelope.h"
 
 // TODO: Fix Envelope to state machine
-//Envelope::Envelope(float *attackTime, float* decayTime,
-//                   float *sustainAmplitude, float* releaseTime)
-//{
-//    m_attackTime = attackTime;
-//    m_decayTime = decayTime;
-//    m_sustainAmplitude = sustainAmplitude;
-//    m_releaseTime = releaseTime;
-//}
+Envelope::Envelope(float *attackTime, float* decayTime,
+                   float *sustainAmplitude, float* releaseTime)
+{
+    m_attackTime = attackTime;
+    m_decayTime = decayTime;
+    m_sustainAmplitude = sustainAmplitude;
+    m_releaseTime = releaseTime;
+}
 
 void Envelope::noteOn(double time)
 {
@@ -40,20 +40,20 @@ double Envelope::getAmplitude(double time)
     if (m_noteOn) {
         lifeTime = time - m_triggerOnTime;
         
-        if (lifeTime <= m_attackTime)
-            amplitude = (lifeTime / m_attackTime) * m_startAmplitude;
+        if (lifeTime <= *m_attackTime)
+            amplitude = (lifeTime / *m_attackTime) * m_startAmplitude;
         
-        else if (lifeTime > m_attackTime && lifeTime <= (m_attackTime + m_decayTime))
-            amplitude = ((lifeTime - m_attackTime) / m_decayTime) * (m_sustainAmplitude - m_startAmplitude) + m_startAmplitude;
+        else if (lifeTime > *m_attackTime && lifeTime <= (*m_attackTime + *m_decayTime))
+            amplitude = ((lifeTime - *m_attackTime) / *m_decayTime) * (*m_sustainAmplitude - m_startAmplitude) + m_startAmplitude;
         
-        else if (lifeTime > (m_attackTime + m_decayTime))
-            amplitude = m_sustainAmplitude;
+        else if (lifeTime > (*m_attackTime + *m_decayTime))
+            amplitude = *m_sustainAmplitude;
         
         m_actualSustainAmplitude = amplitude;
     } else {
         lifeTime = time - m_triggerOffTime;
         
-        amplitude = ((lifeTime / m_releaseTime) * (0.0 - m_actualSustainAmplitude) + m_actualSustainAmplitude);
+        amplitude = ((lifeTime / *m_releaseTime) * (0.0 - m_actualSustainAmplitude) + m_actualSustainAmplitude);
     }
     
     if (amplitude <= 0.0001)

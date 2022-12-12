@@ -12,13 +12,11 @@
 #define M_PI  (3.14159265358979323846)
 #endif
 
-Voice::Voice(AdsrParams *params, Oscillator *osc1, Oscillator *osc2,
+Voice::Voice(Envelope *pEnv, Oscillator *osc1, Oscillator *osc2,
              Oscillator *osc3, Lfo *lfo)
 {
-    m_adsr.getAttack() = params->attackTime;
-    m_adsr.getDecay() = params->decayTime;
-    m_adsr.getSustain() = params->sustainAmplitude;
-    m_adsr.getRelease() = params->releaseTime;
+//    updateAdsrParams(params);
+    m_adsr = pEnv;
     
     m_oscillators[0] = osc1;
     m_oscillators[1] = osc2;
@@ -26,10 +24,18 @@ Voice::Voice(AdsrParams *params, Oscillator *osc1, Oscillator *osc2,
     m_lfo = lfo;
 }
 
+void Voice::updateAdsrParams(AdsrParams *params)
+{
+//    m_adsr->getAttack() = params->attackTime;
+//    m_adsr->getDecay() = params->decayTime;
+//    m_adsr->getSustain() = params->sustainAmplitude;
+//    m_adsr->getRelease() = params->releaseTime;
+}
+
 
 double Voice::getSample(double time)
 {
-    double amplitude = m_adsr.getAmplitude(time);
+    double amplitude = m_adsr->getAmplitude(time);
     
     double sample = 0.0;
     double lfoFreq = 0.0;
@@ -39,7 +45,7 @@ double Voice::getSample(double time)
         sample += m_oscillators[i]->getSample(m_key, time, lfoFreq);
     }
     
-    if (m_adsr.isNoteOff() && m_adsr.getCurrentAmplitude() == 0.0)
+    if (m_adsr->isNoteOff() && m_adsr->getCurrentAmplitude() == 0.0)
         m_active = false;
     
     return amplitude * sample;
@@ -57,14 +63,14 @@ bool Voice::isActive()
 
 void Voice::noteOn(int key, double time)
 {
-    m_adsr.noteOn(time);
+    m_adsr->noteOn(time);
     m_active = true;
     m_key = key;
 }
 
 void Voice::noteOff(double time)
 {
-    m_adsr.noteOff(time);
+    m_adsr->noteOff(time);
 }
 
 void Voice::reset()

@@ -39,7 +39,7 @@ public:
     
     void noteOff(int key);
     
-    void draw();
+    void draw(ImGuiStyle& style);
     
     const std::array<Voice*, Synth::NumberOfVoices>& getVoices();
     

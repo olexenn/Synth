@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW)
 endif ()
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 project(synth)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
