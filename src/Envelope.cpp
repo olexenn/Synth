@@ -9,7 +9,6 @@
 
 #include "Envelope.h"
 
-// TODO: Fix Envelope to state machine
 Envelope::Envelope(float *attackTime, float* decayTime,
                    float *sustainAmplitude, float* releaseTime)
 {
@@ -23,13 +22,13 @@ void Envelope::noteOn(double time)
 {
     m_actualSustainAmplitude = 0.0;
     m_triggerOnTime = time;
-    m_noteOn = true;
+    m_isNoteOn = true;
 }
 
 void Envelope::noteOff(double time)
 {
     m_triggerOffTime = time;
-    m_noteOn = false;
+    m_isNoteOn = false;
 }
 
 double Envelope::getAmplitude(double time)
@@ -37,7 +36,7 @@ double Envelope::getAmplitude(double time)
     double amplitude = 0.0;
     double lifeTime = 0.0;
     
-    if (m_noteOn) {
+    if (m_isNoteOn) {
         lifeTime = time - m_triggerOnTime;
         
         if (lifeTime <= *m_attackTime)
@@ -66,7 +65,7 @@ double Envelope::getAmplitude(double time)
 
 void Envelope::reset()
 {
-    m_noteOn = false;
+    m_isNoteOn = false;
     m_currentAmplitude = 0.0;
     m_triggerOnTime = 0.0;
     m_triggerOffTime = 0.0;
@@ -74,7 +73,7 @@ void Envelope::reset()
 
 bool Envelope::isNoteOff()
 {
-    return !m_noteOn;
+    return !m_isNoteOn;
 }
 
 double Envelope::getCurrentAmplitude()

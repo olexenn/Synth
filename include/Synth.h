@@ -27,69 +27,41 @@ public:
     void noteOn(int key, double time);
     void noteOff(int key, double time);
     
-    int getCounter();
+    int getCounter(); //debug
     
     void draw(ImGuiStyle& style);
     
-    void getAllPresets();
-    void savePreset(std::string name);
-    void loadPreset(std::string name);
     
-    const std::array<Voice*, NumberOfVoices>& getVoices();
+    const std::array<Voice*, NumberOfVoices>& getVoices(); //debug
     
 private:
-    int m_polyphonyCounter = 0;
+    int m_polyphonyCounter = 0; //debug
     
-//    Envelope m_adsrEnvelope;
-//    std::unique_ptr<Envelope> m_adsrEnvelope;
-//    std::unique_ptr<Envelope> m_adsrEnvelope = std::make_unique<Envelope>();
     AdsrParams m_adsrParams;
     
     Filter m_filter;
     
     std::array<Voice*, NumberOfVoices> m_voices;
     
-//    bool m_isOsc1Active = true;
-//    WaveType m_osc1Type = SINE;
-//    float m_osc1Gain = 0.5f;
-//    int m_osc1NoteOffset = 0;
-//
-//    bool m_isOsc2Active = false;
-//    WaveType m_osc2Type = SINE;
-//    float m_osc2Gain = 0.5f;
-//    int m_osc2NoteOffset = 0;
-//
-//    bool m_isOsc3Active = false;
-//    WaveType m_osc3Type = SINE;
-//    float m_osc3Gain = 0.5f;
-//    int m_osc3NoteOffset = 0;
-//
-//    float m_lfoFrequency = 5.0f;
-//    bool m_isLfoActive = false;
-    
-    bool m_isOsc1Active;
-    WaveType m_osc1Type;
-    float m_osc1Gain;
-    int m_osc1NoteOffset;
-    
-    bool m_isOsc2Active;
-    WaveType m_osc2Type;
-    float m_osc2Gain;
-    int m_osc2NoteOffset;
-    
-    bool m_isOsc3Active;
-    WaveType m_osc3Type;
-    float m_osc3Gain;
-    int m_osc3NoteOffset;
+    std::array<bool, 3> m_isOscActive;
+    std::array<WaveType, 3> m_oscType;
+    std::array<float, 3> m_oscGain;
+    std::array<int, 3> m_oscNoteOffset;
     
     float m_lfoFrequency;
     bool m_isLfoActive;
     
+    std::vector<std::string> m_presets;
+    void getAllPresets();
+    void savePreset(std::string name);
+    void loadPreset(std::string name);
+    
+    std::string getCurrentPath();
+    
     Voice* findFreeVoice(int key);
     
-    int m_counter = 0;
+    int m_counter = 0;//debug
     
-    std::vector<std::string> m_presets;
 };
 
 #endif /* Synth_h */

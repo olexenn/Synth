@@ -15,7 +15,6 @@
 Voice::Voice(Envelope *pEnv, Oscillator *osc1, Oscillator *osc2,
              Oscillator *osc3, Lfo *lfo)
 {
-//    updateAdsrParams(params);
     m_adsr = pEnv;
     
     m_oscillators[0] = osc1;
@@ -23,15 +22,6 @@ Voice::Voice(Envelope *pEnv, Oscillator *osc1, Oscillator *osc2,
     m_oscillators[2] = osc3;
     m_lfo = lfo;
 }
-
-void Voice::updateAdsrParams(AdsrParams *params)
-{
-//    m_adsr->getAttack() = params->attackTime;
-//    m_adsr->getDecay() = params->decayTime;
-//    m_adsr->getSustain() = params->sustainAmplitude;
-//    m_adsr->getRelease() = params->releaseTime;
-}
-
 
 double Voice::getSample(double time)
 {
@@ -46,39 +36,26 @@ double Voice::getSample(double time)
     }
     
     if (m_adsr->isNoteOff() && m_adsr->getCurrentAmplitude() == 0.0)
-        m_active = false;
+        m_isActive = false;
     
     return amplitude * sample;
 }
 
-void Voice::setActive(bool activity)
-{
-    m_active = activity;
-}
-
 bool Voice::isActive()
 {
-    return m_active;
+    return m_isActive;
 }
 
 void Voice::noteOn(int key, double time)
 {
     m_adsr->noteOn(time);
-    m_active = true;
+    m_isActive = true;
     m_key = key;
 }
 
 void Voice::noteOff(double time)
 {
     m_adsr->noteOff(time);
-}
-
-void Voice::reset()
-{
-//    m_key = 0;
-//    m_timeOn = 0.0;
-//    m_timeOff = 0.0;
-//    m_adsrEnvelope->reset();
 }
 
 int Voice::getKey()

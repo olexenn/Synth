@@ -22,7 +22,7 @@ public:
     
     ~Audio();
     
-    int getCounter();
+    int getCounter(); //debug
     
     bool open(PaDeviceIndex index);
     
@@ -32,8 +32,8 @@ public:
     
     bool stop();
     
-    float getTime();
-    float getSample();
+    float getTime(); //debug
+    float getSample(); //debug
     
     void noteOn(int key);
     
@@ -41,11 +41,11 @@ public:
     
     void draw(ImGuiStyle& style);
     
-    const std::array<Voice*, Synth::NumberOfVoices>& getVoices();
+    const std::array<Voice*, Synth::NumberOfVoices>& getVoices(); //debug
     
 private:
     PaStream *m_stream;
-    Synth synth;
+    Synth m_synth;
     float m_panningValue;
     float m_gain;
     double m_time;

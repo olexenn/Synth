@@ -10,6 +10,10 @@
 #include <iostream>
 #include <filesystem>
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #include <imgui.h>
 #include <imgui-knobs.h>
 
@@ -18,27 +22,22 @@
 Synth::Synth()
 {
     
-//    m_adsrParams.attackTime = 0.1f;
-//    m_adsrParams.decayTime = 0.01f;
-//    m_adsrParams.sustainAmplitude = 0.8f;
-//    m_adsrParams.releaseTime = 0.2f;
-    
     getAllPresets();
     loadPreset(m_presets[0]);
     
-    auto pOsc1 = new Oscillator(&m_osc1Type, &m_isOsc1Active,
-                                &m_osc1NoteOffset, &m_osc1Gain);
-    auto pOsc2 = new Oscillator(&m_osc2Type, &m_isOsc2Active,
-                                &m_osc2NoteOffset, &m_osc2Gain);
-    auto pOsc3 = new Oscillator(&m_osc3Type, &m_isOsc3Active,
-                                &m_osc3NoteOffset, &m_osc3Gain);
+    std::array<Oscillator*, 3> pOsc;
+    for (int i = 0; i < 3; i++) {
+        pOsc[i] = new Oscillator(&m_oscType[i], &m_isOscActive[i],
+                                 &m_oscNoteOffset[i], &m_oscGain[i]);
+    }
+    
     auto pLfo = new Lfo(&m_lfoFrequency, &m_isLfoActive);
     
     
     for (int i = 0; i < NumberOfVoices; i++) {
         auto pEnv = new Envelope(&m_adsrParams.attackTime, &m_adsrParams.decayTime,
                              &m_adsrParams.sustainAmplitude, &m_adsrParams.releaseTime);
-        auto voice = new Voice(pEnv, pOsc1, pOsc2, pOsc3, pLfo);
+        auto voice = new Voice(pEnv, pOsc[0], pOsc[1], pOsc[2], pLfo);
         m_voices[i] = voice;
     }
     
@@ -74,7 +73,6 @@ void Synth::noteOff(int key, double time)
         for (auto voice : m_voices) {
             if (voice->isActive() && voice->getKey() == key) {
                 m_polyphonyCounter--;
-                voice->reset();
                 voice->noteOff(time);
             }
         }
@@ -119,47 +117,22 @@ void Synth::draw(ImGuiStyle& style)
     ImGuiKnobs::Knob("Release", &m_adsrParams.releaseTime, 0.01f, 1.0f, 0.01f);
     ImGui::End();
     
-    // OSC 1
-    ImGui::Begin("Oscillator 1");
-    ImGuiKnobs::Knob("Gain", &m_osc1Gain, 0.0f, 1.0f, 0.05f);
-    ImGui::SameLine();
-    ImGuiKnobs::KnobInt("Offset", &m_osc1NoteOffset, 0, 48, 12);
-    ImGui::SameLine();
-    ImGui::Checkbox("Active", &m_isOsc1Active);
-    if (ImGui::Selectable("Sine", m_osc1Type == SINE)) m_osc1Type = SINE;
-    if (ImGui::Selectable("Square", m_osc1Type == SQUARE)) m_osc1Type = SQUARE;
-    if (ImGui::Selectable("Saw", m_osc1Type == SAW)) m_osc1Type = SAW;
-    if (ImGui::Selectable("Triangle", m_osc1Type == TRIANGLE)) m_osc1Type = TRIANGLE;
-    if (ImGui::Selectable("Noise", m_osc1Type == NOISE)) m_osc1Type = NOISE;
-    ImGui::End();
-    
-    // OSC2
-    ImGui::Begin("Oscillator 2");
-    ImGuiKnobs::Knob("Gain", &m_osc2Gain, 0.0f, 1.0f, 0.05f);
-    ImGui::SameLine();
-    ImGuiKnobs::KnobInt("Offset", &m_osc2NoteOffset, 0, 48, 12);
-    ImGui::SameLine();
-    ImGui::Checkbox("Active", &m_isOsc2Active);
-    if (ImGui::Selectable("Sine", m_osc2Type == SINE)) m_osc2Type = SINE;
-    if (ImGui::Selectable("Square", m_osc2Type == SQUARE)) m_osc2Type = SQUARE;
-    if (ImGui::Selectable("Saw", m_osc2Type == SAW)) m_osc2Type = SAW;
-    if (ImGui::Selectable("Triangle", m_osc2Type == TRIANGLE)) m_osc2Type = TRIANGLE;
-    if (ImGui::Selectable("Noise", m_osc2Type == NOISE)) m_osc2Type = NOISE;
-    ImGui::End();
-    
-    // OSC 3
-    ImGui::Begin("Oscillator3");
-    ImGuiKnobs::Knob("Gain", &m_osc3Gain, 0.0f, 1.0f, 0.05f);
-    ImGui::SameLine();
-    ImGuiKnobs::KnobInt("Offset", &m_osc3NoteOffset, 0, 48, 12);
-    ImGui::SameLine();
-    ImGui::Checkbox("Active", &m_isOsc3Active);
-    if (ImGui::Selectable("Sine", m_osc3Type == SINE)) m_osc3Type = SINE;
-    if (ImGui::Selectable("Square", m_osc3Type == SQUARE)) m_osc3Type = SQUARE;
-    if (ImGui::Selectable("Saw", m_osc3Type == SAW)) m_osc3Type = SAW;
-    if (ImGui::Selectable("Triangle", m_osc3Type == TRIANGLE)) m_osc3Type = TRIANGLE;
-    if (ImGui::Selectable("Noise", m_osc3Type == NOISE)) m_osc3Type = NOISE;
-    ImGui::End();
+    // OSCs
+    for (int i = 0; i < 3; i++) {
+        std::string name = "Oscillator " + std::to_string(i + 1);
+        ImGui::Begin(name.c_str());
+        ImGuiKnobs::Knob("Gain", &m_oscGain[i], 0.0f, 1.0f, 0.05f);
+        ImGui::SameLine();
+        ImGuiKnobs::KnobInt("Offset", &m_oscNoteOffset[i], 0, 48, 12);
+        ImGui::SameLine();
+        ImGui::Checkbox("Active", &m_isOscActive[i]);
+        if (ImGui::Selectable("Sine", m_oscType[i] == SINE)) m_oscType[i] = SINE;
+        if (ImGui::Selectable("Square", m_oscType[i] == SQUARE)) m_oscType[i] = SQUARE;
+        if (ImGui::Selectable("Saw", m_oscType[i] == SAW)) m_oscType[i] = SAW;
+        if (ImGui::Selectable("Triangle", m_oscType[i] == TRIANGLE)) m_oscType[i] = TRIANGLE;
+        if (ImGui::Selectable("Noise", m_oscType[i] == NOISE)) m_oscType[i] = NOISE;
+        ImGui::End();
+    }
     
     // FILTER
     ImGui::Begin("Filter");
@@ -184,8 +157,6 @@ void Synth::draw(ImGuiStyle& style)
     ImGui::Begin("Presets");
     static const char *currentItem = m_presets[0].c_str();
     auto numberOfPrestes = m_presets.size();
-//    if (numberOfPrestes > 0)
-//        currentItem = m_presets[0].c_str();
     float w = ImGui::CalcItemWidth();
     float spacing = style.ItemSpacing.x;
     float buttonSz = ImGui::GetFrameHeight();
@@ -246,7 +217,7 @@ void Synth::savePreset(std::string name)
 {
     name += ".preset";
     std::ofstream preset;
-    preset.open("presets/" + name);
+    preset.open(getCurrentPath() + "presets/" + name);
     if (!preset)
         exit(1);
     
@@ -263,22 +234,12 @@ void Synth::savePreset(std::string name)
     preset << m_filter.getActivity() << std::endl;
     
     // OSC1
-    preset << m_isOsc1Active << std::endl;
-    preset << m_osc1Type << std::endl;
-    preset << m_osc1Gain << std::endl;
-    preset << m_osc1NoteOffset << std::endl;
-    
-    // OSC2
-    preset << m_isOsc2Active << std::endl;
-    preset << m_osc2Type << std::endl;
-    preset << m_osc2Gain << std::endl;
-    preset << m_osc2NoteOffset << std::endl;
-    
-    // OSC3
-    preset << m_isOsc3Active << std::endl;
-    preset << m_osc3Type << std::endl;
-    preset << m_osc3Gain << std::endl;
-    preset << m_osc3NoteOffset << std::endl;
+    for (int i = 0; i < 3; i++) {
+        preset << m_isOscActive[i] << std::endl;
+        preset << m_oscType[i] << std::endl;
+        preset << m_oscGain[i] << std::endl;
+        preset << m_oscNoteOffset[i] << std::endl;
+    }
     
     // LFO
     preset << m_lfoFrequency << std::endl;
@@ -291,9 +252,7 @@ void Synth::loadPreset(std::string name)
 {
     std::string fullName = name + ".preset";
     std::ifstream preset;
-    //std::cout << fullName << std::endl;
-    //std::cin.get();
-    preset.open("presets/" + fullName);
+    preset.open(getCurrentPath() + "presets/" + fullName);
     if (!preset) {
         std::cerr << "ERROR: Couldn't open preset for reading\n";
         exit(1);
@@ -313,29 +272,15 @@ void Synth::loadPreset(std::string name)
     preset >> m_filter.getHighCuttoff();
     preset >> m_filter.getActivity();
     
-    // OSC 1
-    preset >> m_isOsc1Active;
-    int osc1Type;
-    preset >> osc1Type;
-    m_osc1Type = static_cast<WaveType>(osc1Type);
-    preset >> m_osc1Gain;
-    preset >> m_osc1NoteOffset;
-    
-    // OSC 2
-    preset >> m_isOsc2Active;
-    int osc2Type;
-    preset >> osc2Type;
-    m_osc2Type = static_cast<WaveType>(osc2Type);
-    preset >> m_osc2Gain;
-    preset >> m_osc2NoteOffset;
-    
-    // OSC 3
-    preset >> m_isOsc3Active;
-    int osc3Type;
-    preset >> osc3Type;
-    m_osc3Type = static_cast<WaveType>(osc3Type);
-    preset >> m_osc3Gain;
-    preset >> m_osc3NoteOffset;
+    // OSCs
+    for (int i = 0; i < 3; i++) {
+        preset >> m_isOscActive[i];
+        int type;
+        preset >> type;
+        m_oscType[i] = static_cast<WaveType>(type);
+        preset >> m_oscGain[i];
+        preset >> m_oscNoteOffset[i];
+    }
     
     // LFO
     preset >> m_lfoFrequency;
@@ -349,11 +294,28 @@ void Synth::getAllPresets()
     if (!m_presets.empty())
         m_presets = {};
 
-    for (const auto& file : std::filesystem::directory_iterator("./presets")) {
+    for (const auto& file : std::filesystem::directory_iterator(getCurrentPath() + "presets")) {
         std::string p = file.path().u8string();
+        std::string parent = file.path().parent_path().u8string();
         if (p.find(".preset") != std::string::npos) {
-            p.erase(0, 10);
+            p.erase(0, parent.length() + 1);
             m_presets.push_back(p.substr(0, p.find(".")));
         }
     }
+}
+
+std::string Synth::getCurrentPath()
+{
+#ifdef __APPLE__
+    char path[1024];
+    uint32_t size = sizeof(path);
+    if (_NSGetExecutablePath(path, &size) == 0) {
+        std::string resultPath = path;
+        return resultPath.substr(0, resultPath.find("synth"));
+    }
+    else {
+        std::cout << "ERROR: Can't find path for executable\n";
+        exit(1);
+    }
+#endif
 }

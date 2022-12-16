@@ -103,17 +103,17 @@ bool Audio::stop()
 
 void Audio::noteOn(int key)
 {
-    synth.noteOn(key, m_time);
+    m_synth.noteOn(key, m_time);
 }
 
 void Audio::noteOff(int key)
 {
-    synth.noteOff(key, m_time);
+    m_synth.noteOff(key, m_time);
 }
 
 int Audio::getCounter()
 {
-    return synth.getCounter();
+    return m_synth.getCounter();
 }
 
 int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags)
@@ -125,7 +125,7 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-        m_sample = synth.getSample(m_time);
+        m_sample = m_synth.getSample(m_time);
         *out++ = m_gain * (2 - m_panningValue) * m_sample; // left
         *out++ = m_gain * m_panningValue * m_sample; // right
         m_time += g_kTimeStep;
@@ -151,7 +151,7 @@ float Audio::getSample()
 
 void Audio::draw(ImGuiStyle& style)
 {
-    synth.draw(style);
+    m_synth.draw(style);
     
     ImGui::Begin("Master");
     
@@ -164,5 +164,5 @@ void Audio::draw(ImGuiStyle& style)
 
 const std::array<Voice*, Synth::NumberOfVoices>& Audio::getVoices()
 {
-    return synth.getVoices();
+    return m_synth.getVoices();
 }

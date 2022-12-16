@@ -9,7 +9,6 @@
 #define Voice_h
 
 #include <array>
-//#include <memory>
 
 #include "Envelope.h"
 #include "Oscillator.h"
@@ -30,21 +29,13 @@ public:
     void noteOn(int key, double time);
     void noteOff(double time);
     
-    void setActive(bool activity);
-    
-    void reset();
-    
-    double calculateFrequency(int key);
-    
-    void updateAdsrParams(AdsrParams *params);
-    
     int getKey();
     
 private:
     int m_key = 0;
     double m_timeOn = 0.0;
     double m_timeOff = 0.0;
-    bool m_active = false;
+    bool m_isActive = false;
     Envelope *m_adsr;
     std::array<Oscillator*, 3> m_oscillators;
     Lfo *m_lfo;

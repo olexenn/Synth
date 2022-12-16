@@ -21,7 +21,7 @@ public:
     
     void keyDown(int key, int velocity);
     
-    std::vector<int> getKeys();
+    std::vector<int> getKeys(); //debug
     
 private:
     std::array<int, 256> m_keyState = { 0 };

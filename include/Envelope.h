@@ -8,14 +8,6 @@
 #ifndef Envelope_h
 #define Envelope_h
 
-enum AdsrMachine
-{
-    ATTACK,
-    SUSTAIN,
-    DECAY,
-    RELEASE
-};
-
 struct AdsrParams
 {
     float attackTime;
@@ -29,7 +21,6 @@ class Envelope {
 public:
     Envelope(float *attackTime, float *decayTime,
              float *sustainAmplitude, float *releaseTime);
-//    Envelope() = default;
     
     void noteOn(double time);
     
@@ -43,11 +34,6 @@ public:
     
     double getCurrentAmplitude();
     
-//    float& getAttack() { return m_attackTime; };
-//    float& getDecay() { return m_decayTime; };
-//    float& getSustain() { return m_sustainAmplitude; };
-//    float& getRelease() { return m_releaseTime; };
-    
 private:
     double m_startAmplitude = 1.0;
     double m_triggerOnTime = 0.0;
@@ -60,9 +46,7 @@ private:
     float *m_sustainAmplitude;
     float *m_releaseTime;
     
-    bool m_noteOn = false;
-    
-    AdsrMachine m_state = ATTACK;
+    bool m_isNoteOn = false;
 };
 
 #endif /* Envelope_h */
