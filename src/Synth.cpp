@@ -13,6 +13,9 @@
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #endif
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include <imgui.h>
 #include <imgui-knobs.h>
@@ -310,6 +313,19 @@ std::string Synth::getCurrentPath()
     char path[1024];
     uint32_t size = sizeof(path);
     if (_NSGetExecutablePath(path, &size) == 0) {
+        std::string resultPath = path;
+        return resultPath.substr(0, resultPath.find("synth"));
+    }
+    else {
+        std::cout << "ERROR: Can't find path for executable\n";
+        exit(1);
+    }
+#endif
+
+#ifdef _WIN32
+    char path[1024];
+    uint32_t size = sizeof(path);
+    if (GetModuleFileName(NULL, path, size) != 0) {
         std::string resultPath = path;
         return resultPath.substr(0, resultPath.find("synth"));
     }
