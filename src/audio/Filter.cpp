@@ -5,9 +5,7 @@
 //  Created by Алексей Дудник on 30.11.2022.
 //
 
-#include "Filter.h"
-
-
+#include "audio/Filter.h"
 
 void Filter::calculateLowCoefficients()
 {

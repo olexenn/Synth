@@ -17,8 +17,8 @@
 #include <array>
 #include <map>
 
-#include "Keyboard.h"
-#include "Audio.h"
+#include "ui/Keyboard.h"
+#include "audio/Audio.h"
 
 #define DEBUG 1
 

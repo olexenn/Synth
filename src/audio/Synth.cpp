@@ -20,7 +20,7 @@
 #include <imgui.h>
 #include <imgui-knobs.h>
 
-#include "Synth.h"
+#include "audio/Synth.h"
 
 Synth::Synth()
 {

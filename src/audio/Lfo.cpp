@@ -5,7 +5,7 @@
 //  Created by Алексей Дудник on 11.12.2022.
 //
 
-#include "Lfo.h"
+#include "audio/Lfo.h"
 
 Lfo::Lfo(float *frequency, bool *isActive)
 {

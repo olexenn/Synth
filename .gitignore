@@ -2,3 +2,4 @@ build/
 .DS_Store
 resources/
 *.tex
+.vscode/

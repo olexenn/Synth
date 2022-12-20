@@ -31,3 +31,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/i
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC PortAudio glfw glad)
+
+add_subdirectory(tests)
+
+# if (NOT googletest)
+#   include(FetchContent)
+#   FetchContent_Declare(
+#     googletest
+#     URL https://github.com/google/googletest/archive/refs/heads/master.zip
+#   )
+
+#   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+#   FetchContent_MakeAvailable(googletest)
+# endif()

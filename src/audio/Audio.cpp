@@ -10,7 +10,7 @@
 #include <imgui.h>
 #include <imgui-knobs.h>
 
-#include "Audio.h"
+#include "audio/Audio.h"
 
 constexpr int g_kSampleRate = 44100;
 constexpr double g_kTimeStep = 1.0 / static_cast<float>(g_kSampleRate);

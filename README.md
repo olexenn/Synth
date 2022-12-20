@@ -4,10 +4,11 @@ Cross-platform synthesier written in C++
 
 ![image synth](./imgs/synth.png)
 
-## Libs
+## Used Libs
 
 - [PortAudio](https://github.com/PortAudio/portaudio)
 - [ImGui](https://github.com/ocornut/imgui)
+- [GoogleTest](https://github.com/google/googletest)
 
 ## How To Build
 

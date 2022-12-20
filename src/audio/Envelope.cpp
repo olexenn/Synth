@@ -4,10 +4,7 @@
 //
 //  Created by Алексей Дудник on 18.10.2022.
 //
-#include <imgui.h>
-#include <imgui-knobs.h>
-
-#include "Envelope.h"
+#include "audio/Envelope.h"
 
 Envelope::Envelope(float *attackTime, float* decayTime,
                    float *sustainAmplitude, float* releaseTime)
