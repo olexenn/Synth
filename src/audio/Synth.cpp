@@ -297,6 +297,7 @@ void Synth::getAllPresets()
     if (!m_presets.empty())
         m_presets = {};
 
+    std::string binaryPath = getCurrentPath();
     for (const auto& file : std::filesystem::directory_iterator(getCurrentPath() + "presets")) {
         std::string p = file.path().u8string();
         std::string parent = file.path().parent_path().u8string();
@@ -314,7 +315,7 @@ std::string Synth::getCurrentPath()
     uint32_t size = sizeof(path);
     if (_NSGetExecutablePath(path, &size) == 0) {
         std::string resultPath = path;
-        return resultPath.substr(0, resultPath.find("synth"));
+        return resultPath.substr(0, resultPath.find("dudo-synth"));
     }
     else {
         std::cout << "ERROR: Can't find path for executable\n";
@@ -327,7 +328,7 @@ std::string Synth::getCurrentPath()
     uint32_t size = sizeof(path);
     if (GetModuleFileName(NULL, path, size) != 0) {
         std::string resultPath = path;
-        return resultPath.substr(0, resultPath.find("synth"));
+        return resultPath.substr(0, resultPath.find("dudo-synth"));
     }
     else {
         std::cout << "ERROR: Can't find path for executable\n";
