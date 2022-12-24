@@ -17,10 +17,18 @@
 #include <windows.h>
 #endif
 
-#include <imgui.h>
-#include <imgui-knobs.h>
-
 #include "audio/Synth.h"
+
+int Synth::m_counter = 0;
+AdsrParams Synth::m_adsrParams = { 0.1, 0.1, 0.8, 0.2 };
+std::array<bool, 3> Synth::m_isOscActive = { false, false, false };
+std::array<WaveType, 3> Synth::m_oscType = { SINE, SINE, SINE };
+std::array<float, 3> Synth::m_oscGain = { 0.5, 0.5, 0.5 };
+std::array<int, 3> Synth::m_oscNoteOffset = { 0, 0, 0};
+float Synth::m_lfoFrequency = 5.0;
+bool Synth::m_isLfoActive = false;
+std::vector<std::string> Synth::m_presets;
+Filter Synth::m_filter;
 
 Synth::Synth()
 {
@@ -104,116 +112,6 @@ Voice* Synth::findFreeVoice(int key)
 const std::array<Voice*, Synth::NumberOfVoices>& Synth::getVoices()
 {
     return m_voices;
-}
-
-void Synth::draw(ImGuiStyle& style)
-{
-    
-    // ADSR
-    ImGui::Begin("ADSR");
-    ImGuiKnobs::Knob("Attack", &m_adsrParams.attackTime, 0.001f, 1.0f, 0.01f);
-    ImGui::SameLine();
-    ImGuiKnobs::Knob("Decay", &m_adsrParams.decayTime, 0.0f, 1.0f, 0.05f);
-    ImGui::SameLine();
-    ImGuiKnobs::Knob("Sustain", &m_adsrParams.sustainAmplitude, 0.0f, 1.0f, 0.05f);
-    ImGui::SameLine();
-    ImGuiKnobs::Knob("Release", &m_adsrParams.releaseTime, 0.01f, 1.0f, 0.01f);
-    ImGui::End();
-    
-    // OSCs
-    for (int i = 0; i < 3; i++) {
-        std::string name = "Oscillator " + std::to_string(i + 1);
-        ImGui::Begin(name.c_str());
-        ImGuiKnobs::Knob("Gain", &m_oscGain[i], 0.0f, 1.0f, 0.05f);
-        ImGui::SameLine();
-        ImGuiKnobs::KnobInt("Offset", &m_oscNoteOffset[i], 0, 48, 12);
-        ImGui::SameLine();
-        ImGui::Checkbox("Active", &m_isOscActive[i]);
-        if (ImGui::Selectable("Sine", m_oscType[i] == SINE)) m_oscType[i] = SINE;
-        if (ImGui::Selectable("Square", m_oscType[i] == SQUARE)) m_oscType[i] = SQUARE;
-        if (ImGui::Selectable("Saw", m_oscType[i] == SAW)) m_oscType[i] = SAW;
-        if (ImGui::Selectable("Triangle", m_oscType[i] == TRIANGLE)) m_oscType[i] = TRIANGLE;
-        if (ImGui::Selectable("Noise", m_oscType[i] == NOISE)) m_oscType[i] = NOISE;
-        ImGui::End();
-    }
-    
-    // FILTER
-    ImGui::Begin("Filter");
-    ImGui::Checkbox("Active", &m_filter.getActivity());
-    if (ImGui::Selectable("LowPass", m_filter.getFilterType() == LOW_PASS))
-        m_filter.setFilterType(LOW_PASS);
-    if (ImGui::Selectable("HighPass", m_filter.getFilterType() == HIGH_PASS))
-        m_filter.setFilterType(HIGH_PASS);
-    ImGuiKnobs::Knob("Low Pass", &m_filter.getLowCuttoff(), 100.0f, 20000.0f, 20.0f);
-    ImGui::SameLine();
-    ImGuiKnobs::Knob("High Pass", &m_filter.getHighCuttoff(), 100.0f, 3000.0f, 20.0f);
-    ImGui::End();
-    
-    // LFO
-    ImGui::Begin("LFO");
-    ImGui::Checkbox("Active", &m_isLfoActive);
-    ImGui::SameLine();
-    ImGuiKnobs::Knob("Freq", &m_lfoFrequency, 1.0f, 100.0f, 1.0f);
-    ImGui::End();
-    
-    // PRESET MANAGER
-    ImGui::Begin("Presets");
-    static const char *currentItem = m_presets[0].c_str();
-    auto numberOfPrestes = m_presets.size();
-    float w = ImGui::CalcItemWidth();
-    float spacing = style.ItemSpacing.x;
-    float buttonSz = ImGui::GetFrameHeight();
-    ImGui::PushItemWidth(w - spacing * 2.0f - buttonSz * 2.0f);
-    if (ImGui::BeginCombo("Presets", currentItem, ImGuiComboFlags_NoArrowButton)) {
-        for (int i = 0; i < numberOfPrestes; i++) {
-            bool isSelected = (currentItem == m_presets[i]);
-            if (ImGui::Selectable(m_presets[i].c_str())) {
-                currentItem = m_presets[i].c_str();
-                loadPreset(currentItem);
-                break;
-            }
-            if (isSelected)
-                ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-    }
-    ImGui::PopItemWidth();
-    ImGui::SameLine(0, spacing);
-    if (ImGui::ArrowButton("##l", ImGuiDir_Left)) {
-        if (--m_counter < 0)
-            m_counter = numberOfPrestes - 1;
-        currentItem = m_presets[m_counter].c_str();
-        loadPreset(currentItem);
-    }
-    ImGui::SameLine(0, spacing);
-    if (ImGui::ArrowButton("##r", ImGuiDir_Right)) {
-        if (++m_counter == numberOfPrestes)
-            m_counter = 0;
-        currentItem = m_presets[m_counter].c_str();
-        loadPreset(currentItem);
-    }
-    ImGui::SameLine(0, style.ItemInnerSpacing.x);
-    if (ImGui::Button("Save")) ImGui::OpenPopup("Save new preset");
-    
-    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-    
-    if (ImGui::BeginPopupModal("Save new preset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        static char buf[64] = "";
-        ImGui::Text("Enter the name for new preset");
-        ImGui::InputText("Name", buf, 64);
-        if (ImGui::Button("OK", ImVec2(120, 0))) {
-            if (std::strcmp(buf, "") || std::strcmp(buf, " ")) ImGui::CloseCurrentPopup();
-            savePreset(buf);
-            getAllPresets();
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::SetItemDefaultFocus();
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-        ImGui::EndPopup();
-    }
-    ImGui::End();
 }
 
 void Synth::savePreset(std::string name)

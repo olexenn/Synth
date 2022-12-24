@@ -39,15 +39,13 @@ public:
     
     void noteOff(int key);
     
-    void draw(ImGuiStyle& style);
-    
     const std::array<Voice*, Synth::NumberOfVoices>& getVoices(); //debug
     
+    static float m_panningValue;
+    static float m_gain;
 private:
     PaStream *m_stream;
     Synth m_synth;
-    float m_panningValue;
-    float m_gain;
     double m_time;
     float m_sample;
     

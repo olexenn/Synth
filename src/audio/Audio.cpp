@@ -7,15 +7,15 @@
 
 #include <iostream>
 
-#include <imgui.h>
-#include <imgui-knobs.h>
-
 #include "audio/Audio.h"
 
 constexpr int g_kSampleRate = 44100;
 constexpr double g_kTimeStep = 1.0 / static_cast<float>(g_kSampleRate);
 
-Audio::Audio() : m_stream(0), m_time(0.0), m_panningValue(1.0f), m_gain(0.5f)
+float Audio::m_panningValue = 1.0;
+float Audio::m_gain = 0.5;
+
+Audio::Audio() : m_stream(0), m_time(0.0)
 {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
@@ -39,11 +39,6 @@ bool Audio::open(PaDeviceIndex index)
     
     const PaDeviceInfo *pInfo = Pa_GetDeviceInfo(outputParameters.device);
     if (pInfo != 0) {
-//        std::cout << "Output Device Name: " << pInfo->name << std::endl;
-//        std::cout << "Host API: " << pInfo->hostApi << std::endl;
-//        std::cout << "Sample rate: " << pInfo->defaultSampleRate << std::endl;
-//        std::cout << "Latency: " << pInfo->defaultLowOutputLatency << std::endl;
-//        std::cout << "Host Api: " << Pa_GetHostApiInfo(pInfo->hostApi) << std::endl;
         auto hostApi = Pa_GetHostApiInfo(pInfo->hostApi);
         std::cout << "Host API: " << hostApi->name << std::endl;
     }
@@ -147,19 +142,6 @@ float Audio::getTime()
 float Audio::getSample()
 {
     return m_sample;
-}
-
-void Audio::draw(ImGuiStyle& style)
-{
-    m_synth.draw(style);
-    
-    ImGui::Begin("Master");
-    
-    ImGuiKnobs::Knob("Panning", &m_panningValue, 0.0f, 2.0f);
-    ImGui::SameLine();
-    ImGuiKnobs::Knob("Volume", &m_gain, 0.0f, 2.0f);
-    
-    ImGui::End();
 }
 
 const std::array<Voice*, Synth::NumberOfVoices>& Audio::getVoices()

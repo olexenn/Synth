@@ -29,38 +29,35 @@ public:
     
     int getCounter(); //debug
     
-    void draw(ImGuiStyle& style);
-    
-    
     const std::array<Voice*, NumberOfVoices>& getVoices(); //debug
     
+    
+    static AdsrParams m_adsrParams;
+    
+    static Filter m_filter;
+    
+    static std::array<bool, 3> m_isOscActive;
+    static std::array<WaveType, 3> m_oscType;
+    static std::array<float, 3> m_oscGain;
+    static std::array<int, 3> m_oscNoteOffset;
+    
+    static float m_lfoFrequency;
+    static bool m_isLfoActive;
+    
+    static std::vector<std::string> m_presets;
+    
+    static void getAllPresets();
+    static void savePreset(std::string name);
+    static void loadPreset(std::string name);
+    static std::string getCurrentPath();
+    static int m_counter;//debug
 private:
     int m_polyphonyCounter = 0; //debug
     
-    AdsrParams m_adsrParams;
-    
-    Filter m_filter;
-    
     std::array<Voice*, NumberOfVoices> m_voices;
-    
-    std::array<bool, 3> m_isOscActive;
-    std::array<WaveType, 3> m_oscType;
-    std::array<float, 3> m_oscGain;
-    std::array<int, 3> m_oscNoteOffset;
-    
-    float m_lfoFrequency;
-    bool m_isLfoActive;
-    
-    std::vector<std::string> m_presets;
-    void getAllPresets();
-    void savePreset(std::string name);
-    void loadPreset(std::string name);
-    
-    std::string getCurrentPath();
     
     Voice* findFreeVoice(int key);
     
-    int m_counter = 0;//debug
     
 };
 

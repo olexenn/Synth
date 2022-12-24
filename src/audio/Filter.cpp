@@ -38,22 +38,6 @@ void Filter::calculateHighCoefficients()
     m_input2 = m_input0;
     m_output1 = (2.0 * (c2 - 1.0)) * oned;
     m_output2 = (1.0 - csqr2 + c2) * oned;
-    
-//    double w0 = 2 * M_PI / 44100 * *m_highCuttoff;
-//    double cw0 = std::cos(w0);
-//    double alpha = std::sin(w0) / (2.0 * m_frequency);
-//
-//    double b0 = (1.0 + cw0) / 2.0;
-//    double b1 = -(1.0 + cw0);
-//    double b2 = b0;
-//    double a0 = 1.0 + alpha;
-//    double a1 = -2.0 * cw0;
-//    double a2 = 1.0 - alpha;
-//    m_input0 = b0 / a0;
-//    m_input1 = b1 / a0;
-//    m_input2 = b2 / a0;
-//    m_output1 = a1 / a0;
-//    m_output2 = a2 / a0;
 }
 
 double Filter::getFilteredSample(double inputSample)
