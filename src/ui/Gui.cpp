@@ -20,7 +20,7 @@
 #include "ui/Gui.h"
 #include "audio/Synth.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 std::map<ImGuiKey, int> keyCodeMap {
     { ImGuiKey_Z, 39 },
@@ -65,7 +65,7 @@ Gui::Gui(Audio *audio) : m_audio(audio)
     float highDPIScaleFactor = 1.1;
     glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit())
-        return 1;
+        exit(1);
     
     const char *glsl_version = "#version 150";
     
@@ -78,7 +78,7 @@ Gui::Gui(Audio *audio) : m_audio(audio)
 #endif
     
     m_window = glfwCreateWindow(1280, 720, "Synth", NULL, NULL);
-    if (m_window == NULL) return 1;
+    if (m_window == NULL) exit(1);
     glfwSetWindowSizeLimits(m_window, 1080, 720, 1280, 720);
     glfwMakeContextCurrent(m_window);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
