@@ -1,7 +1,13 @@
 #include "ui/Gui.h"
 #include "audio/Audio.h"
 
+#define UI_DEBUG 0
+
 int main(void) {
+#if UI_DEBUG
+    Gui gui;
+    gui.testRun();
+#else
     // Audio Init
     Audio audio;
 
@@ -13,6 +19,8 @@ int main(void) {
     Gui gui(&audio);
     
     gui.run();
+    
+#endif
     
     return 0;
 }

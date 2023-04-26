@@ -32,26 +32,26 @@ Filter Synth::m_filter;
 
 Synth::Synth()
 {
-    
+
     getAllPresets();
     loadPreset(m_presets[0]);
-    
+
     std::array<Oscillator*, 3> pOsc;
     for (int i = 0; i < 3; i++) {
         pOsc[i] = new Oscillator(&m_oscType[i], &m_isOscActive[i],
                                  &m_oscNoteOffset[i], &m_oscGain[i]);
     }
-    
+
     auto pLfo = new Lfo(&m_lfoFrequency, &m_isLfoActive);
-    
-    
+
+
     for (int i = 0; i < NumberOfVoices; i++) {
         auto pEnv = new Envelope(&m_adsrParams.attackTime, &m_adsrParams.decayTime,
                              &m_adsrParams.sustainAmplitude, &m_adsrParams.releaseTime);
         auto voice = new Voice(pEnv, pOsc[0], pOsc[1], pOsc[2], pLfo);
         m_voices[i] = voice;
     }
-    
+
 }
 
 double Synth::getSample(double time)
@@ -60,19 +60,19 @@ double Synth::getSample(double time)
     for (auto voice : m_voices) {
         if (voice->isActive()) {
             sample += voice->getSample(time);
-            
+
             if (m_filter.isFilterOn())
                 sample = m_filter.getFilteredSample(sample);
         }
     }
-    
+
     return sample;
 }
 
 void Synth::noteOn(int key, double time)
 {
     auto voice = findFreeVoice(key);
-    
+
     if (voice) {
         m_polyphonyCounter++;
         voice->noteOn(key, time);
@@ -100,12 +100,12 @@ Voice* Synth::findFreeVoice(int key)
         if (voice->isActive() && voice->getKey() == key)
             return nullptr;
     }
-    
+
     for (auto &voice : m_voices) {
         if (!(voice->isActive())) {
             return voice;
         }
-        
+
     }
 }
 
@@ -121,19 +121,19 @@ void Synth::savePreset(std::string name)
     preset.open(getCurrentPath() + "presets/" + name);
     if (!preset)
         exit(1);
-    
+
     // ADSR
     preset << m_adsrParams.attackTime << std::endl;
     preset << m_adsrParams.decayTime << std::endl;
     preset << m_adsrParams.sustainAmplitude << std::endl;
     preset << m_adsrParams.releaseTime << std::endl;
-    
+
     // FILTER
     preset << m_filter.getFilterType() << std::endl;
     preset << m_filter.getLowCuttoff() << std::endl;
     preset << m_filter.getHighCuttoff() << std::endl;
     preset << m_filter.getActivity() << std::endl;
-    
+
     // OSC1
     for (int i = 0; i < 3; i++) {
         preset << m_isOscActive[i] << std::endl;
@@ -141,11 +141,11 @@ void Synth::savePreset(std::string name)
         preset << m_oscGain[i] << std::endl;
         preset << m_oscNoteOffset[i] << std::endl;
     }
-    
+
     // LFO
     preset << m_lfoFrequency << std::endl;
     preset << m_isLfoActive << std::endl;
-    
+
     preset.close();
 }
 
@@ -158,13 +158,13 @@ void Synth::loadPreset(std::string name)
         std::cerr << "ERROR: Couldn't open preset for reading\n";
         exit(1);
     }
-    
+
     // ADSR
     preset >> m_adsrParams.attackTime;
     preset >> m_adsrParams.decayTime;
     preset >> m_adsrParams.sustainAmplitude;
     preset >> m_adsrParams.releaseTime;
-    
+
     // FILTER
     int filterType;
     preset >> filterType;
@@ -172,7 +172,7 @@ void Synth::loadPreset(std::string name)
     preset >> m_filter.getLowCuttoff();
     preset >> m_filter.getHighCuttoff();
     preset >> m_filter.getActivity();
-    
+
     // OSCs
     for (int i = 0; i < 3; i++) {
         preset >> m_isOscActive[i];
@@ -182,11 +182,11 @@ void Synth::loadPreset(std::string name)
         preset >> m_oscGain[i];
         preset >> m_oscNoteOffset[i];
     }
-    
+
     // LFO
     preset >> m_lfoFrequency;
     preset >> m_isLfoActive;
-    
+
     preset.close();
 }
 
