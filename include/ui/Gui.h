@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <map>
+#include <algorithm>
 
 #include <imgui.h>
 
@@ -92,7 +93,7 @@ private:
         auto gid = ImGui::GetID(label);
         ImGui::PushID(gid);
 
-    //    ImGui::GetCurrentWindow()->DC.CurrLineTextBaseOffset = 0;
+        ImGui::GetCurrentWindow()->DC.CurrLineTextBaseOffset = 0;
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
         bool isActive = ImGui::IsItemActive();
@@ -105,16 +106,15 @@ private:
             tickThickness = 4.0f;
             arcThickness = 3.5f;
         }
+        
+        bool isDraggin = false;
 
-        if (isActive && io.MouseDelta.x != 0.0f) {
-//            *value += io.MouseDelta.x * ((max - min) / 150.0f);
-//            *value = io.MouseDelta.x / ((max - min) / step);
-//            *value += io.MouseDelta.x * (min + (max - min) * step);
-    //        *value -= io.MouseDelta.y * ((max - min) / 500.0f);
-//            *value -= io.MouseDelta.y * ((max - min) / 150.0f);
-            *value -= io.MouseDelta.y * (min + (max - min) * step);
-            if (*value < min) *value = min;
-            if (*value > max) *value = max;
+        if (isHovered && ImGui::IsMouseClicked(0)) isDraggin = true;
+        else if (isDraggin && ImGui::IsMouseReleased(0)) isDraggin = false;
+
+        if (isHovered && isActive) {
+            *value -= io.MouseDelta.y * step;
+            *value = std::clamp(*value, min, max);
         }
         
         SynthColors textColor = WHITE;
@@ -132,6 +132,17 @@ private:
         draw_list->PathStroke(m_colors[color], false, arcThickness);
         draw_list->AddLine(tickCenter, tickPos, m_colors[textColor], tickThickness);
         draw_list->AddText(ImVec2(cursorPos.x + (2.2f * size - textWidth) * 0.5f, cursorPos.y + outer_radius + m_style.WindowPadding.y + ImGui::GetTextLineHeight()), m_colors[textColor], label);
+
+        bool showTooltip = true;;
+        if (!isEnabled) showTooltip = true;
+        else if (!(*isEnabled)) showTooltip = false;
+
+        if (showTooltip && (isHovered || isActive)) {
+            ImGui::SetNextWindowPos(ImVec2(cursorPos.x - m_style.WindowPadding.x, cursorPos.y - ImGui::GetTextLineHeight() - m_style.ItemInnerSpacing.y - m_style.WindowPadding.y));
+            ImGui::BeginTooltip();
+            ImGui::TextColored(m_colors[WHITE], "%.3f", *value);
+            ImGui::EndTooltip();
+        }
 
         ImGui::PopID();
     }

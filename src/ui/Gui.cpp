@@ -193,8 +193,13 @@ Gui::Gui(Audio *audio) : m_audio(audio)
     ImGuiStyle& style = ImGui::GetStyle();
     ImFontConfig cfg;
     cfg.OversampleH = cfg.OversampleV = 3;
-    m_mainFont = io.Fonts->AddFontFromFileTTF("./Montserrat-Regular.ttf", 13.0f, &cfg);
-    m_headerFont = io.Fonts->AddFontFromFileTTF("./Montserrat-Regular.ttf", 20.0f, &cfg);
+
+    std::string mainFontFileName = Synth::getCurrentPath() + "/fonts/Montserrat-Regular.ttf";
+    m_mainFont = io.Fonts->AddFontFromFileTTF(mainFontFileName.c_str(), 13.0f, &cfg);
+    m_headerFont = io.Fonts->AddFontFromFileTTF(mainFontFileName.c_str(), 20.0f, &cfg);
+
+    std::cout << "Main font " << m_mainFont->IsLoaded() << std::endl;
+    std::cout << "Header font " << m_headerFont->IsLoaded() << std::endl;
     
     float iconFontSize = 25.0f * 2.0f / 3.0f;
 //    float iconFontSize = 20.0f;
@@ -203,8 +208,9 @@ Gui::Gui(Audio *audio) : m_audio(audio)
     iconCfg.MergeMode = true;
     iconCfg.PixelSnapH = true;
     iconCfg.GlyphMinAdvanceX = iconFontSize;
-    m_iconFont = io.Fonts->AddFontFromFileTTF("./fontaudio.ttf", iconFontSize, &iconCfg, icons_range);
-    
+    std::string iconFontFileName = Synth::getCurrentPath() + "/fonts/fontaudio.ttf";
+    m_iconFont = io.Fonts->AddFontFromFileTTF(iconFontFileName.c_str(), iconFontSize, &iconCfg, icons_range);
+    std::cout << "Icon font " << m_iconFont->IsLoaded() << std::endl;
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -450,7 +456,7 @@ void Gui::draw()
 //    m_audio->draw(m_style);
     
     ImGui::ShowDemoWindow();
-    ImGui::ShowStyleEditor();
+    //ImGui::ShowStyleEditor();
     
     // Master
     ImGui::Begin("Master");
@@ -518,7 +524,7 @@ void Gui::draw()
         Synth::m_filter.setFilterType(LOW_PASS);
     if (ImGui::Selectable("HighPass", Synth::m_filter.getFilterType() == HIGH_PASS))
         Synth::m_filter.setFilterType(HIGH_PASS);
-    knob<float>("Low Pass", &Synth::m_filter.getLowCuttoff(), 100.0f, 20000.0f, 20.0f, AQUA, &Synth::m_filter.getActivity());
+    knob<float>("Low Pass", &Synth::m_filter.getLowCuttoff(), 100.0f, 20000.0f, 200.0f, AQUA, &Synth::m_filter.getActivity());
     ImGui::SameLine();
     knob<float>("High Pass", &Synth::m_filter.getHighCuttoff(), 100.0f, 3000.0f, 20.0f, AQUA, &Synth::m_filter.getActivity());
     ImGui::End();

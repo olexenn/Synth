@@ -16,6 +16,11 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#ifdef __linux__
+#include <libgen.h>
+#include <unistd.h>
+#include <linux/limits.h>
+#endif
 
 #include "audio/Synth.h"
 
@@ -232,5 +237,14 @@ std::string Synth::getCurrentPath()
         std::cout << "ERROR: Can't find path for executable\n";
         exit(1);
     }
+#endif
+
+#ifdef __linux__
+    char result[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+    const char* path;
+    if (count != -1)
+        path = dirname(result);
+    return path;
 #endif
 }

@@ -12,8 +12,9 @@ int main(void) {
     Audio audio;
 
     audio.open(Pa_GetDefaultOutputDevice());
-    
+
     audio.start();
+ 
     
     // GUI
     Gui gui(&audio);
