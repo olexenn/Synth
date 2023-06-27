@@ -12,7 +12,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-#include <imgui-knobs.h>
+#include <implot.h>
 
 #include <GLFW/glfw3.h>
 
@@ -34,6 +34,8 @@ float val3 = 75.0f;
 float val4 = 25.0f;
 float val5 = 60.0f;
 float val6 = 10.0f;
+
+int uvCounter = 1;
 
 std::map<ImGuiKey, int> keyCodeMap {
     { ImGuiKey_Z, 39 },
@@ -74,7 +76,6 @@ static void glfwErrorCallback(int error, const char *description)
 
 Gui::Gui()
 {
-
     m_colors[WHITE] = ImColor(221, 199, 161);
     m_colors[PINK] = ImColor(211, 134, 155);
     m_colors[BLACK] = ImColor(20, 22, 23);
@@ -83,18 +84,32 @@ Gui::Gui()
     m_colors[RED] = ImColor(234, 105, 98);
     m_colors[GREEN] = ImColor(169, 182, 101);
     m_colors[AQUA] = ImColor(137, 180, 120);
+    m_colors[GREY] = ImColor(80, 73, 69);
+    m_colors[GREY_2] = ImColor(146, 131, 116);
+    m_colors[GREY_3] = ImColor(168, 153, 132);
+    m_colors[WHITE_2] = ImColor(212, 190, 152, 50);
+    m_colors[WHITE_3] = ImColor(212, 190, 152);
     m_colors[ORANGE] = ImColor(231, 138, 78);
-    m_colors[BROWN] = ImColor(101, 71, 53);
+    m_colors[DARK_BLUE] = ImColor(13, 49, 56);
+    m_colors[DARK_GREEN] = ImColor(50, 54, 26);
+    m_colors[DARK_GREEN_1] = ImColor(51, 62, 52);
+    m_colors[BROWN] = ImColor(79, 56, 41);
     m_colors[UNKNOWN_YELLOW] = ImColor(234, 162, 39);
-    m_keyboard = new Keyboard(m_colors);
-    
+    m_colors[PINK_BLUE] = ImColor(168, 154, 159);
+    m_colors[YELLOW_RED] = ImColor(225, 136, 93);
+    m_colors[RED_GREEN] = ImColor(202, 144, 100);
+    m_colors[AQUA_ORANGE] = ImColor(184, 159, 99);
+    m_colors[ORANGE_PINK] = ImColor(221, 136, 117);
+    //m_keyboard = new Keyboard(m_colors);
+    //    this->m_keyboard = Keyboard(m_colors);
+        // initialize ImGUI with GLFW
     float highDPIScaleFactor = 1.1;
     glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit())
         exit(1);
-    
-    const char *glsl_version = "#version 150";
-    
+
+    const char* glsl_version = "#version 150";
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -102,32 +117,54 @@ Gui::Gui()
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    
+
     m_window = glfwCreateWindow(1280, 720, "Synth", NULL, NULL);
     if (m_window == NULL) exit(1);
-    glfwSetWindowSizeLimits(m_window, 1080, 720, 1280, 720);
+    glfwSetWindowSizeLimits(m_window, 1080, 720, 2560, 1600);
     glfwMakeContextCurrent(m_window);
-    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1); // vsync
-    
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
+    //    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
-//    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    
+    //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
     ImGui::StyleColorsClassic();
-    
+
     ImGuiStyle& style = ImGui::GetStyle();
+    ImFontConfig cfg;
+    cfg.OversampleH = cfg.OversampleV = 3;
+
+    std::string mainFontFileName = Synth::getCurrentPath() + "/fonts/Montserrat-Regular.ttf";
+    m_mainFont = io.Fonts->AddFontFromFileTTF(mainFontFileName.c_str(), 13.0f, &cfg);
+    m_headerFont = io.Fonts->AddFontFromFileTTF(mainFontFileName.c_str(), 20.0f, &cfg);
+
+    /*std::cout << "Main font " << m_mainFont->IsLoaded() << std::endl;
+    std::cout << "Header font " << m_headerFont->IsLoaded() << std::endl;*/
+
+    float iconFontSize = 25.0f * 2.0f / 3.0f;
+    //    float iconFontSize = 20.0f;
+    static const ImWchar icons_range[] = { ICON_MIN_FAD, ICON_MAX_16_FAD, 0 };
+    ImFontConfig iconCfg;
+    iconCfg.MergeMode = true;
+    iconCfg.PixelSnapH = true;
+    iconCfg.GlyphMinAdvanceX = iconFontSize;
+    std::string iconFontFileName = Synth::getCurrentPath() + "/fonts/fontaudio.ttf";
+    m_iconFont = io.Fonts->AddFontFromFileTTF(iconFontFileName.c_str(), iconFontSize, &iconCfg, icons_range);
+    //std::cout << "Icon font " << m_iconFont->IsLoaded() << std::endl;
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
-    
+
+
     ImGui_ImplGlfw_InitForOpenGL(m_window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
-    
+
 }
 
 Gui::Gui(Audio *audio) : m_audio(audio)
@@ -183,6 +220,7 @@ Gui::Gui(Audio *audio) : m_audio(audio)
     
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 //    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
@@ -198,8 +236,8 @@ Gui::Gui(Audio *audio) : m_audio(audio)
     m_mainFont = io.Fonts->AddFontFromFileTTF(mainFontFileName.c_str(), 13.0f, &cfg);
     m_headerFont = io.Fonts->AddFontFromFileTTF(mainFontFileName.c_str(), 20.0f, &cfg);
 
-    std::cout << "Main font " << m_mainFont->IsLoaded() << std::endl;
-    std::cout << "Header font " << m_headerFont->IsLoaded() << std::endl;
+    /*std::cout << "Main font " << m_mainFont->IsLoaded() << std::endl;
+    std::cout << "Header font " << m_headerFont->IsLoaded() << std::endl;*/
     
     float iconFontSize = 25.0f * 2.0f / 3.0f;
 //    float iconFontSize = 20.0f;
@@ -210,7 +248,7 @@ Gui::Gui(Audio *audio) : m_audio(audio)
     iconCfg.GlyphMinAdvanceX = iconFontSize;
     std::string iconFontFileName = Synth::getCurrentPath() + "/fonts/fontaudio.ttf";
     m_iconFont = io.Fonts->AddFontFromFileTTF(iconFontFileName.c_str(), iconFontSize, &iconCfg, icons_range);
-    std::cout << "Icon font " << m_iconFont->IsLoaded() << std::endl;
+    //std::cout << "Icon font " << m_iconFont->IsLoaded() << std::endl;
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -226,6 +264,7 @@ Gui::~Gui()
 {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
     
     glfwDestroyWindow(m_window);
@@ -256,34 +295,37 @@ void Gui::ui_init()
 
 void Gui::checkbox(const char *id, bool *value, SynthColors color)
 {
+    // Ініціалізація змінних
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImDrawList *draw_list = ImGui::GetWindowDrawList();
     
+    bool isHovered = ImGui::IsItemHovered();
     float size = 20.0f;
     
+    // Створення елемента у контексті ImGui
     ImGui::InvisibleButton(id, ImVec2(size, size));
     auto gid = ImGui::GetID(id);
     ImGui::PushID(gid);
     
-    float thickness = 1.0f;
-    
-    bool isHovered = ImGui::IsItemHovered();
-    
-    if (ImGui::IsItemHovered()) thickness = 2.0f;
-    
+    // Якщо елемент неактивний, то колір елемента - сірий
     if (!(*value)) color = GREY;
     
-    draw_list->AddRectFilled(ImVec2(pos.x + 1.0f, pos.y + 1.0f), ImVec2(pos.x + size - 1.0f, pos.y + size - 1.0f), m_colors[color], 2.0f);
+    // Малюємо фундаментальні елементи відповідно з умовами
+    draw_list->AddRectFilled(ImVec2(pos.x + 1.0f, pos.y + 1.0f),
+        ImVec2(pos.x + size - 1.0f, pos.y + size - 1.0f), m_colors[color], 2.0f);
     
     if (isHovered)
-        draw_list->AddRectFilled(ImVec2(pos.x - 1.0f, pos.y - 1.0f), ImVec2(pos.x + size + 1.0f, pos.y + size + 1.0f), m_colors[WHITE_2], 1.0f);
+        draw_list->AddRectFilled(ImVec2(pos.x - 1.0f, pos.y - 1.0f),
+            ImVec2(pos.x + size + 1.0f, pos.y + size + 1.0f), m_colors[WHITE_2], 1.0f);
     
+    // Маніпуляція значенням елемента
     if (isHovered && ImGui::IsMouseClicked(0)) *value = !*value;
     
+    // Закриваємо елемент
     ImGui::PopID();
 }
 
-bool Gui::waveButton(const char *label, SynthColors color, bool isSelected, bool *isEnabled = nullptr)
+bool Gui::waveButton(const char *label, SynthColors color, bool isSelected, const char *tooltip, bool *isEnabled = nullptr)
 {
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImDrawList *draw_list = ImGui::GetWindowDrawList();
@@ -311,10 +353,15 @@ bool Gui::waveButton(const char *label, SynthColors color, bool isSelected, bool
     ImGui::PushFont(m_iconFont);
     draw_list->AddText(ImVec2(pos.x + (3.0f * size - textSize.x) * 0.4f, pos.y + (3.0f * size - textSize.y) * 0.4f), m_colors[color], label);
     ImGui::PopFont();
-    if (isHovered)
+    if (isHovered) {
         draw_list->AddRectFilled(pos, ImVec2(pos.x + 3 * size, pos.y + 3 * size), m_colors[WHITE_2], 1.0f);
+        ImGui::SetNextWindowPos(ImVec2(pos.x - m_style.WindowPadding.x, pos.y - ImGui::GetTextLineHeight() - m_style.ItemInnerSpacing.y - m_style.WindowPadding.y));
+        ImGui::BeginTooltip();
+        ImGui::TextColored(m_colors[WHITE], "%s", tooltip);
+        ImGui::EndTooltip();
+    }
     
-    if (isHovered && isClicked && *isEnabled) {
+    if (isHovered && isClicked && isEnabled && *isEnabled) {
         return true;
     }
     
@@ -322,32 +369,152 @@ bool Gui::waveButton(const char *label, SynthColors color, bool isSelected, bool
     
 }
 
-void Gui::curveEditor(const char *label, SynthColors color)
+float linearToDb(float sample)
 {
-    ImVec2 pos = ImGui::GetCursorScreenPos();
-    ImDrawList *draw_list = ImGui::GetWindowDrawList();
-    
-    float size = ImGui::GetTextLineHeight() * 2;
-    
-    ImGui::InvisibleButton(label, ImVec2(9 * size, 3 * size));
-    
-    draw_list->AddRectFilled(pos, ImVec2(pos.x + 9 * size, pos.y + 3 * size), m_colors[BLACK]);
+    return 20 * std::log10(sample);
 }
+
+float peakLeft;
+float peakRight;
+
+float boost(float v)
+{
+    return 1.0f - (1.0f - v) * (1.0f - v);
+}
+void Gui::drawMeter()
+{
+    ImGui::Begin("Meter", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    ImGui::PushFont(m_headerFont);
+    ImGui::TextColored(m_colors[WHITE], "Meter");
+    ImGui::Separator();
+    ImGui::PopFont();
+
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+    float size = ImGui::GetTextLineHeight();
+
+    ImVec2 rectSize{ 3.0f * size, 36.0f * size };
+
+    ImGui::InvisibleButton("uvMeter", rectSize);
+
+    float roundness = 2.0f;
+    draw_list->AddRect(pos, pos + rectSize, m_colors[WHITE], roundness);
+    draw_list->AddRect(ImVec2(pos.x + 1.0f + rectSize.x, pos.y), ImVec2(pos.x + 1.0f + 2 * rectSize.x, pos.y + rectSize.y), m_colors[WHITE], roundness);
+
+    /*peakLeft = ImSaturate(boost(m_audio->getLeftSample()));
+    peakRight = ImSaturate(boost(m_audio->getRightSample()));*/
+    if (m_audio->getCounter() != 0) {
+        /*float rightValue = ImSaturate(boost(m_audio->getRightSample()));
+        float leftValue = ImSaturate(boost(m_audio->getLeftSample()));*/
+        float rightValue = ImSaturate(m_audio->getRightSample());
+        float leftValue = ImSaturate(m_audio->getLeftSample());
+
+        if (peakRight - rightValue >= 0.2f || rightValue == 0.0f)
+            peakRight -= 0.011f;
+        else
+            peakRight = peakRight >= rightValue ? peakRight : rightValue;
+
+        if (peakLeft - leftValue >= 0.2f || leftValue == 0.0f)
+            peakLeft -= 0.011f;
+        else
+            peakLeft = peakLeft >= leftValue ? peakLeft : leftValue;
+
+        float r = 0.011f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / (0.013f - 0.011f)));
+        switch (uvCounter) {
+        case 1:
+            peakRight += r;
+            peakLeft -= r;
+            uvCounter = 2;
+            break;
+        case 2:
+            peakRight -= r;
+            peakLeft += r;
+            uvCounter = 1;
+            break;
+        default:
+            uvCounter = 1;
+            break;
+        }
+        if (peakRight < 0.0f) peakRight = 0.0f;
+        if (peakLeft < 0.0f) peakLeft = 0.0f;
+    }
+    else {
+        if (peakLeft != 0.0f || peakRight != 0.0f) {
+            peakLeft -= 0.011f;
+            peakRight -= 0.011f;
+        }
+        if (peakLeft < 0.0f) peakLeft = 0.0f;
+        if (peakRight < 0.0f) peakRight = 0.0f;
+    }
+
+    SynthColors leftColor = peakLeft >= 0.8f ? RED : AQUA;
+    SynthColors rightColor = peakRight >= 0.8f ? RED : AQUA;  
+
+    ImVec2 startLeft = ImVec2(pos.x, pos.y + rectSize.y * (1.0f - peakLeft));
+    draw_list->AddRectFilled(startLeft, pos + rectSize, m_colors[leftColor], roundness);
+    
+    ImVec2 startRight = ImVec2(pos.x + 1.0f + rectSize.x, pos.y + rectSize.y * (1.0f - peakRight));
+    draw_list->AddRectFilled(startRight, ImVec2(pos.x + 1.0f + 2 * rectSize.x, pos.y + rectSize.y), m_colors[rightColor], roundness);
+
+    ImGui::End();
+}
+
+void Gui::drawVisuals()
+{
+    ImGui::Begin("Visuals", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    ImGui::PushFont(m_headerFont);
+    ImGui::TextColored(m_colors[WHITE], "Visualization");
+    ImGui::Separator();
+    ImGui::PopFont();
+
+    if (m_plotCounter == 1023) m_plotCounter = 0;
+    m_audioData[m_plotCounter++] = m_audio->getLeftSample();
+    if (m_plotCounter == 1023) m_plotCounter = 0;
+    m_audioData[m_plotCounter++] = m_audio->getRightSample();
+
+    ImGui::PlotLines(" ", &m_audioData[0], m_audioData.size(), 0, nullptr, -1.0f, 1.0f, ImVec2(950, 380));
+
+    //ImPlot::ShowDemoWindow();
+    ImGui::End();
+}
+
+bool firstCheckbox = true;
+bool secondCheckbox = true;
+bool thridCheckbox = true;
 
 void Gui::testDraw()
 {
     ui_init();
-    ImGui::Begin("UI", nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Select", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+    ImGui::PushFont(m_headerFont);
+    ImGui::TextColored(m_colors[WHITE], "Knobs");
+    ImGui::Separator();
+    ImGui::PopFont();
     
-//    knob("Mnenie Vlada", &val, 0.0f, 100.0f, 1.0f, RED);
+    /*if (waveButton(ICON_FAD_MODSINE, PINK, Synth::m_oscType[0] == SINE, "Sine", &firstCheckbox)) Synth::m_oscType[0] = SINE;
+    ImGui::SameLine();
+    if (waveButton(ICON_FAD_MODSQUARE, AQUA, Synth::m_oscType[0] == SQUARE, "Square", &firstCheckbox)) Synth::m_oscType[0] = SQUARE;
+    ImGui::SameLine();
+    if (waveButton(ICON_FAD_MODSAWUP, RED, Synth::m_oscType[0] == SAW, "Saw", &firstCheckbox)) Synth::m_oscType[0] = SAW;
+    ImGui::SameLine();
+    if (waveButton(ICON_FAD_MODTRI, YELLOW, Synth::m_oscType[0] == TRIANGLE, "Triangle", &firstCheckbox)) Synth::m_oscType[0] = TRIANGLE;
+    ImGui::SameLine();
+    if (waveButton(ICON_FAD_MODRANDOM, GREEN, Synth::m_oscType[0] == NOISE, "Noise", &firstCheckbox)) Synth::m_oscType[0] = NOISE;*/
+    knob("Knob1", &val, 0.0f, 100.0f, 1.0f, PINK);
+    ImGui::SameLine();
+    knob("Knob2", &val2, 0.0f, 100.0f, 1.0f, RED);
+    ImGui::SameLine();
+    knob("Knob3", &val3, 0.0f, 100.0f, 1.0f, AQUA);
+    ImGui::SameLine();
+    knob("Knob4", &val4, 0.0f, 100.0f, 1.0f, YELLOW);
     
     ImGui::End();
 }
 
 void Gui::testRun()
 {
-    ImVec4 clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    
+    ImVec4 clearColor = ImVec4(0.392f, 0.584f, 0.929f, 1.00f);
     
     while (!glfwWindowShouldClose(m_window)) {
         glfwPollEvents();
@@ -385,7 +552,7 @@ void Gui::noteOn(int key, int velocity)
 void Gui::run()
 {
     ui_init();
-    ImVec4 clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 clearColor = ImVec4(0.392f, 0.584f, 0.929f, 1.00f);
     
     while (!glfwWindowShouldClose(m_window)) {
         glfwPollEvents();
@@ -455,25 +622,29 @@ void Gui::draw()
     m_keyboard->draw();
 //    m_audio->draw(m_style);
     
-    ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
     //ImGui::ShowStyleEditor();
     
     // Master
-    ImGui::Begin("Master");
+    ImGui::Begin("Master", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    ImGui::PushFont(m_headerFont);
+    ImGui::TextColored(m_colors[WHITE], "Master");
+    ImGui::Separator();
+    ImGui::PopFont();
     knob<float>("Panning", &Audio::m_panningValue, 0.0f, 2.0f, 0.1f, GREEN);
     ImGui::SameLine();
     knob<float>("Volume", &Audio::m_gain, 0.0f, 2.0f, 0.05f, GREEN);
     ImGui::End();
     
     // ADSR
-    ImGui::Begin("ADSR", nullptr, ImGuiWindowFlags_NoTitleBar);
+    bool adsr = true;
+    ImGui::Begin("ADSR", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     ImGui::PushFont(m_headerFont);
     ImGui::TextColored(m_colors[YELLOW], ICON_FAD_ADSR);
     ImGui::SameLine();
-    ImGui::Text("ADSR");
+    ImGui::TextColored(m_colors[WHITE], "ADSR");
     ImGui::PopFont();
     ImGui::Separator();
-    curveEditor("ADSR", YELLOW);
     knob<float>("Attack", &Synth::m_adsrParams.attackTime, 0.001f, 1.0f, 0.01f, YELLOW);
     ImGui::SameLine();
     knob<float>("Decay", &Synth::m_adsrParams.decayTime, 0.0f, 1.0f, 0.05f, YELLOW);
@@ -486,7 +657,7 @@ void Gui::draw()
     // OSCs
     for (int i = 0; i < 3; i++) {
         std::string name = "OSC  " + std::to_string(i + 1);
-        ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
+        ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
         checkbox(name.c_str(), &Synth::m_isOscActive[i], PINK);
         ImGui::SameLine();
         ImGui::PushFont(m_headerFont);
@@ -500,49 +671,64 @@ void Gui::draw()
 //        ImGui::SameLine();
         
 //        waveSelect(&Synth::m_oscType[i], PINK);
-        if (waveButton(ICON_FAD_MODSINE, PINK, Synth::m_oscType[i] == SINE, &Synth::m_isOscActive[i])) Synth::m_oscType[i] = SINE;
+        if (waveButton(ICON_FAD_MODSINE, PINK, Synth::m_oscType[i] == SINE, "Sine", &Synth::m_isOscActive[i])) Synth::m_oscType[i] = SINE;
         ImGui::SameLine();
-        if (waveButton(ICON_FAD_MODSQUARE, PINK, Synth::m_oscType[i] == SQUARE, &Synth::m_isOscActive[i])) Synth::m_oscType[i] = SQUARE;
+        if (waveButton(ICON_FAD_MODSQUARE, PINK, Synth::m_oscType[i] == SQUARE, "Square", &Synth::m_isOscActive[i])) Synth::m_oscType[i] = SQUARE;
         ImGui::SameLine();
-        if (waveButton(ICON_FAD_MODSAWUP, PINK, Synth::m_oscType[i] == SAW, &Synth::m_isOscActive[i])) Synth::m_oscType[i] = SAW;
+        if (waveButton(ICON_FAD_MODSAWUP, PINK, Synth::m_oscType[i] == SAW, "Saw", &Synth::m_isOscActive[i])) Synth::m_oscType[i] = SAW;
         ImGui::SameLine();
-        if (waveButton(ICON_FAD_MODTRI, PINK, Synth::m_oscType[i] == TRIANGLE, &Synth::m_isOscActive[i])) Synth::m_oscType[i] = TRIANGLE;
+        if (waveButton(ICON_FAD_MODTRI, PINK, Synth::m_oscType[i] == TRIANGLE, "Triangle", &Synth::m_isOscActive[i])) Synth::m_oscType[i] = TRIANGLE;
         ImGui::SameLine();
-        if (waveButton(ICON_FAD_MODRANDOM, PINK, Synth::m_oscType[i] == NOISE, &Synth::m_isOscActive[i])) Synth::m_oscType[i] = NOISE;
+        if (waveButton(ICON_FAD_MODRANDOM, PINK, Synth::m_oscType[i] == NOISE, "Noise", &Synth::m_isOscActive[i])) Synth::m_oscType[i] = NOISE;
         ImGui::End();
     }
     
     // FILTER
-    ImGui::Begin("Filter", nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin("Filter", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     checkbox("Active", &Synth::m_filter.getActivity(), AQUA);
     ImGui::SameLine();
     ImGui::PushFont(m_headerFont);
-    ImGui::Text("FILTER");
+    ImGui::TextColored(Synth::m_filter.getActivity() ? m_colors[WHITE] : m_colors[GREY], "FILTER");
     ImGui::PopFont();
     ImGui::Separator();
-    if (ImGui::Selectable("LowPass", Synth::m_filter.getFilterType() == LOW_PASS))
+    if (waveButton(ICON_FAD_FILTER_LOWPASS, AQUA, Synth::m_filter.getFilterType() == LOW_PASS, "Low Pass", &Synth::m_filter.getActivity()))
         Synth::m_filter.setFilterType(LOW_PASS);
-    if (ImGui::Selectable("HighPass", Synth::m_filter.getFilterType() == HIGH_PASS))
-        Synth::m_filter.setFilterType(HIGH_PASS);
-    knob<float>("Low Pass", &Synth::m_filter.getLowCuttoff(), 100.0f, 20000.0f, 200.0f, AQUA, &Synth::m_filter.getActivity());
     ImGui::SameLine();
-    knob<float>("High Pass", &Synth::m_filter.getHighCuttoff(), 100.0f, 3000.0f, 20.0f, AQUA, &Synth::m_filter.getActivity());
+    if (waveButton(ICON_FAD_FILTER_HIGHPASS, AQUA, Synth::m_filter.getFilterType() == HIGH_PASS, "High Pass", &Synth::m_filter.getActivity()))
+        Synth::m_filter.setFilterType(HIGH_PASS);
+
+    switch (Synth::m_filter.getFilterType()) {
+    case LOW_PASS:
+        knob<float>("Low Pass", &Synth::m_filter.getLowCuttoff(), 100.0f, 20000.0f, 200.0f, AQUA, &Synth::m_filter.getActivity());
+        break;
+    case HIGH_PASS:
+        knob<float>("High Pass", &Synth::m_filter.getHighCuttoff(), 100.0f, 3000.0f, 20.0f, AQUA, &Synth::m_filter.getActivity());
+        break;
+    }
     ImGui::End();
+
+
     
     // LFO
-    ImGui::Begin("LFO", nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin("Vibrato", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 //    ImGui::Checkbox("Active", &Synth::m_isLfoActive);
-    checkbox("LFO", &Synth::m_isLfoActive, RED);
+    checkbox("Vibrato", &Synth::m_isLfoActive, RED);
     ImGui::SameLine();
     ImGui::PushFont(m_headerFont);
-    ImGui::Text("LFO");
+    ImGui::TextColored(Synth::m_isLfoActive ? m_colors[WHITE] : m_colors[GREY], "Vibrato");
     ImGui::PopFont();
     ImGui::Separator();
-    knob<float>("Freq", &Synth::m_lfoFrequency, 1.0f, 100.0f, 1.0f, RED, &Synth::m_isLfoActive);
+    knob<float>("Freq", &Synth::m_lfoFrequency, 0.1f, 5.f, 0.1f, RED, &Synth::m_isLfoActive);
     ImGui::End();
     
+
+    
     // PRESET MANAGER
-    ImGui::Begin("Presets");
+    ImGui::Begin("Presets", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    ImGui::PushFont(m_headerFont);
+    ImGui::TextColored(m_colors[WHITE], "Presets");
+    ImGui::Separator();
+    ImGui::PopFont();
     static const char *currentItem = Synth::m_presets[0].c_str();
     int numberOfPresets = static_cast<int>(Synth::m_presets.size());
     float w = ImGui::CalcItemWidth();
@@ -599,6 +785,9 @@ void Gui::draw()
         ImGui::EndPopup();
     }
     ImGui::End();
+
+    drawMeter();
+    drawVisuals();
     
 //    ImGui::Begin("Meter");
 //    ImGui::Text("Meter");

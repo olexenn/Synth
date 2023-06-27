@@ -43,8 +43,12 @@ public:
     ~Gui();
     void testRun();
     void run();
+
+    std::array<float, 1024> m_audioData;
+    int m_plotCounter = 0;
     
 private:
+    //static int uvCounter;
     GLFWwindow *m_window;
     ImGuiStyle m_style;
     Keyboard *m_keyboard;
@@ -71,7 +75,7 @@ private:
 
         float size = ImGui::GetTextLineHeight() * 2.0f;
 
-        auto io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
 
         ImVec2 cursorPos = ImGui::GetCursorScreenPos();
         float outer_radius = size * 0.83f;
@@ -113,6 +117,12 @@ private:
         else if (isDraggin && ImGui::IsMouseReleased(0)) isDraggin = false;
 
         if (isHovered && isActive) {
+            //float step = 1.0f / steps;
+            //step *= 0.5f;
+            //*value += io.MouseDelta.x * step;
+            //*value -= io.MouseDelta.y * step;
+            //if (*value < 0.0f) *value = 0.0f;
+            //if (*value > 1.0f) *value = 1.0f;
             *value -= io.MouseDelta.y * step;
             *value = std::clamp(*value, min, max);
         }
@@ -148,8 +158,9 @@ private:
     }
     
     void checkbox(const char *id, bool *value, SynthColors color);
-    bool waveButton(const char *label, SynthColors color, bool isSelected, bool *isEnabled);
-    void curveEditor(const char *label, SynthColors color);
+    bool waveButton(const char *label, SynthColors color, bool isSelected, const char* tooltip, bool *isEnabled);
+    void drawMeter();
+    void drawVisuals();
 };
 
 #endif /* Gui_h */

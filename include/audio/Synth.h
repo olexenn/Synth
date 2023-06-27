@@ -43,6 +43,10 @@ public:
     
     static float m_lfoFrequency;
     static bool m_isLfoActive;
+
+    static bool m_isChorusActive;
+    static float m_chorusFrequency;
+    static int m_chorusDepth;
     
     static std::vector<std::string> m_presets;
     

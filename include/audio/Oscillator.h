@@ -22,7 +22,6 @@ class Oscillator
 public:
     Oscillator(WaveType *type, bool *isActive, int *noteOffset, float *gain);
     double getSample(int key, double time, double lfoFrequency);
-    void draw();
     
 private:
     WaveType *m_type;

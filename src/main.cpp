@@ -1,3 +1,4 @@
+#include <iostream>
 #include "ui/Gui.h"
 #include "audio/Audio.h"
 
@@ -8,14 +9,17 @@ int main(void) {
     Gui gui;
     gui.testRun();
 #else
+    const PaVersionInfo* govno = Pa_GetVersionInfo();
+    std::cout << "version: " << govno->versionText << std::endl;
     // Audio Init
     Audio audio;
+
+    std::cout << "Created audio object" << std::endl;
 
     audio.open(Pa_GetDefaultOutputDevice());
 
     audio.start();
  
-    
     // GUI
     Gui gui(&audio);
     

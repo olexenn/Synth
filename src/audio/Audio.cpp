@@ -6,6 +6,8 @@
 //
 
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 #include "audio/Audio.h"
 
@@ -15,11 +17,14 @@ constexpr double g_kTimeStep = 1.0 / static_cast<float>(g_kSampleRate);
 float Audio::m_panningValue = 1.0;
 float Audio::m_gain = 0.5;
 
-Audio::Audio() : m_stream(0), m_time(0.0)
+Audio::Audio() : m_stream(0), m_time(0.0), m_leftSample(0.0f), m_rightSample(0.0f)
 {
+    std::cout << "audio constructor" << std::endl;
     PaError err = Pa_Initialize();
+    std::cout << "audio init: " << err << std::endl;
     if (err != paNoError) {
-        exit(1);
+        std::cout << "pa_init error: " << err << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
     }
 }
 
@@ -35,12 +40,19 @@ bool Audio::open(PaDeviceIndex index)
     PaStreamParameters outputParameters;
     
     outputParameters.device = index;
-    if (outputParameters.device == paNoDevice) return false;
+    if (outputParameters.device == paNoDevice) {
+        std::cout << "No Audio device";
+        return false;
+    }
+    std::cout << "Found audio device" << std::endl;
     
     const PaDeviceInfo *pInfo = Pa_GetDeviceInfo(outputParameters.device);
     if (pInfo != 0) {
         auto hostApi = Pa_GetHostApiInfo(pInfo->hostApi);
         std::cout << "Host API: " << hostApi->name << std::endl;
+    }
+    else {
+        std::cout << "No audio info" << std::endl;
     }
     
     outputParameters.channelCount = 2; // stereo
@@ -50,16 +62,23 @@ bool Audio::open(PaDeviceIndex index)
     
     PaError err = Pa_OpenStream(&m_stream, nullptr, &outputParameters, g_kSampleRate, 64, paNoFlag, &Audio::paCallback, this);
     
-    if (err != paNoError)
+    if (err != paNoError) {
+        std::cout << "open stream error: " << err << std::endl;
         return false;
+    }
+
+    std::cout << "Opend stream" << std::endl;
     
     err = Pa_SetStreamFinishedCallback(m_stream, &Audio::paStreamFinished);
     
     if (err != paNoError) {
+        std::cout << "set stream finished callback error: " << err << std::endl;
         Pa_CloseStream(m_stream);
         m_stream = 0;
         return false;
     }
+
+    std::cout << "stream callback set" << std::endl;
     
     return true;
 }
@@ -120,9 +139,11 @@ int Audio::paCallbackMethod(const void *inputBuffer, void *outputBuffer, unsigne
     (void)statusFlags;
     
     for (int i = 0; i < framesPerBuffer; i++) {
-        m_sample = m_synth.getSample(m_time);
-        *out++ = m_gain * (2 - m_panningValue) * m_sample; // left
-        *out++ = m_gain * m_panningValue * m_sample; // right
+        float sample = m_synth.getSample(m_time);
+        m_leftSample = m_gain * (2 - m_panningValue) * sample;
+        m_rightSample = m_gain * m_panningValue * sample;
+        *out++ = m_leftSample;
+        *out++ = m_rightSample; // right
         m_time += g_kTimeStep;
     }
     
@@ -139,9 +160,14 @@ float Audio::getTime()
     return m_time;
 }
 
-float Audio::getSample()
+float Audio::getLeftSample()
 {
-    return m_sample;
+    return m_leftSample;
+}
+
+float Audio::getRightSample()
+{
+    return m_rightSample;
 }
 
 const std::array<Voice*, Synth::NumberOfVoices>& Audio::getVoices()

@@ -33,7 +33,8 @@ public:
     bool stop();
     
     float getTime(); //debug
-    float getSample(); //debug
+    float getLeftSample();
+    float getRightSample();
     
     void noteOn(int key);
     
@@ -47,7 +48,8 @@ private:
     PaStream *m_stream;
     Synth m_synth;
     double m_time;
-    float m_sample;
+    float m_leftSample;
+    float m_rightSample;
     
     void calculateFrequency(int key);
     
