@@ -16,6 +16,7 @@
 #include <algorithm>
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include "ui/Keyboard.h"
 #include "audio/Audio.h"
@@ -98,6 +99,7 @@ private:
         ImGui::PushID(gid);
 
         ImGui::GetCurrentWindow()->DC.CurrLineTextBaseOffset = 0;
+        
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
         bool isActive = ImGui::IsItemActive();

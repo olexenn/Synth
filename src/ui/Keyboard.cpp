@@ -22,7 +22,8 @@ Keyboard::Keyboard(std::array<ImColor, NUMBER_OF_COLORS>& colors)
 void Keyboard::draw()
 {
 //    ImU32 Red = IM_COL32(0, 255, 0, 255);
-    ImGui::Begin("Keyboard", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+//    ImGui::Begin("Keyboard", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    ImGui::Begin("Keyboard", nullptr, ImGuiWindowFlags_NoTitleBar);
     ImGui::Separator();
     ImDrawList *drawList = ImGui::GetWindowDrawList();
     ImVec2 pos = ImGui::GetCursorScreenPos();
